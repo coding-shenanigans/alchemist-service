@@ -6,12 +6,17 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/coding-shenanigans/alchemist-service/internal/dto"
+	"github.com/coding-shenanigans/alchemist-service/internal/service"
 )
 
-type authHandler struct{}
+type authHandler struct {
+	authService *service.AuthService
+}
 
-func newAuthHandler() *authHandler {
-	return &authHandler{}
+func newAuthHandler(authService *service.AuthService) *authHandler {
+	return &authHandler{
+		authService: authService,
+	}
 }
 
 func (h *authHandler) signup(c *gin.Context) {
@@ -27,7 +32,15 @@ func (h *authHandler) signup(c *gin.Context) {
 		return
 	}
 
-	// TODO: create user
+	user, apiErr := h.authService.Signup(req.Email, req.Username, req.Password)
+	if apiErr != nil {
+		c.JSON(apiErr.Status(), dto.NewErrorResponse(apiErr.Error()))
+		return
+	}
+
 	// TODO: create user session
-	c.JSON(http.StatusNotImplemented, gin.H{"error": "not implemented"})
+
+	res := dto.SignupResponse{User: user}
+
+	c.JSON(http.StatusCreated, res)
 }
