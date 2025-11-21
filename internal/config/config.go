@@ -27,44 +27,24 @@ const (
 )
 
 var (
-	DbHost     string
-	DbPort     int
-	DbUser     string
-	DbPassword string
-	DbName     string
-	DbSslMode  string
-
-	AccessTokenSecret        string
-	AccessTokenDurationSecs  int
-	RefreshTokenSecret       string
-	RefreshTokenDurationSecs int
-	SessionCookieName        string
-	SessionCookieMaxAgeSecs  int
-	SessionCookiePath        string
-	SessionCookieDomain      string
-	SessionCookieSecure      bool
-	SessionCookieHttpOnly    bool
-)
-
-func init() {
-	DbHost = GetEnvStr(dbHostKey)
-	DbPort = GetEnvInt(dbPortKey)
-	DbUser = GetEnvStr(dbUserKey)
+	DbHost     = GetEnvStr(dbHostKey)
+	DbPort     = GetEnvInt(dbPortKey)
+	DbUser     = GetEnvStr(dbUserKey)
 	DbPassword = GetEnvStr(dbPasswordKey)
-	DbName = GetEnvStr(dbNameKey)
-	DbSslMode = GetEnvStr(dbSslModeKey)
+	DbName     = GetEnvStr(dbNameKey)
+	DbSslMode  = GetEnvStr(dbSslModeKey)
 
-	AccessTokenSecret = GetEnvStr(accessTokenSecretKey)
-	AccessTokenDurationSecs = GetEnvInt(accessTokenDurationSecsKey)
-	RefreshTokenSecret = GetEnvStr(refreshTokenSecretKey)
+	AccessTokenSecret        = GetEnvStr(accessTokenSecretKey)
+	AccessTokenDurationSecs  = GetEnvInt(accessTokenDurationSecsKey)
+	RefreshTokenSecret       = GetEnvStr(refreshTokenSecretKey)
 	RefreshTokenDurationSecs = GetEnvInt(refreshTokenDurationSecsKey)
-	SessionCookieName = GetEnvStr(sessionCookieNameKey)
-	SessionCookieMaxAgeSecs = GetEnvInt(sessionCookieMaxAgeSecsKey)
-	SessionCookiePath = GetEnvStr(sessionCookiePathKey)
-	SessionCookieDomain = GetEnvStr(sessionCookieDomainKey)
-	SessionCookieSecure = GetEnvBool(sessionCookieSecureKey)
-	SessionCookieHttpOnly = GetEnvBool(sessionCookieHttpOnlyKey)
-}
+	SessionCookieName        = GetEnvStr(sessionCookieNameKey)
+	SessionCookieMaxAgeSecs  = GetEnvInt(sessionCookieMaxAgeSecsKey)
+	SessionCookiePath        = GetEnvStr(sessionCookiePathKey)
+	SessionCookieDomain      = GetEnvStr(sessionCookieDomainKey)
+	SessionCookieSecure      = GetEnvBool(sessionCookieSecureKey)
+	SessionCookieHttpOnly    = GetEnvBool(sessionCookieHttpOnlyKey)
+)
 
 // Gets a required environment variable.
 func GetEnvStr(key string) string {
