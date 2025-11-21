@@ -15,13 +15,6 @@ const (
 	refreshKeyId = "Refresh"
 )
 
-type UserSession struct {
-	Email         string       `json:"email"`
-	Username      string       `json:"username"`
-	AccessToken   string       `json:"accessToken"`
-	SessionCookie *http.Cookie `json:"-"`
-}
-
 // Generates an access token.
 func GenerateAccessToken(userId string) (string, error) {
 	token, err := generateToken(

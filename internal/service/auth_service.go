@@ -7,6 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/coding-shenanigans/alchemist-service/internal/auth"
+	"github.com/coding-shenanigans/alchemist-service/internal/dto"
 	"github.com/coding-shenanigans/alchemist-service/internal/exception"
 	"github.com/coding-shenanigans/alchemist-service/internal/repository"
 )
@@ -28,7 +29,7 @@ func NewAuthService(
 
 func (s *AuthService) Signup(
 	email string, username string, password string,
-) (*auth.UserSession, *exception.ApiError) {
+) (*dto.UserSession, *exception.ApiError) {
 	apiErr := s.userRepository.EmailExists(email)
 	if apiErr != nil {
 		return nil, apiErr
@@ -77,7 +78,7 @@ func (s *AuthService) Signup(
 		return nil, apiErr
 	}
 
-	return &auth.UserSession{
+	return &dto.UserSession{
 		Email:         user.Email,
 		Username:      user.Username,
 		AccessToken:   accessToken,
