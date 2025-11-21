@@ -1,7 +1,7 @@
 package dto
 
-import "github.com/coding-shenanigans/alchemist-service/internal/model"
+import "github.com/coding-shenanigans/alchemist-service/internal/auth"
 
 type SignupResponse struct {
-	User *model.User `json:"user"`
+	UserSession *auth.UserSession `json:"userSession"`
 }

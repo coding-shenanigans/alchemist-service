@@ -2,27 +2,33 @@ package service
 
 import (
 	"net/http"
+	"strconv"
 
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/coding-shenanigans/alchemist-service/internal/auth"
 	"github.com/coding-shenanigans/alchemist-service/internal/exception"
-	"github.com/coding-shenanigans/alchemist-service/internal/model"
 	"github.com/coding-shenanigans/alchemist-service/internal/repository"
 )
 
 type AuthService struct {
-	userRepository *repository.UserRepository
+	userRepository    *repository.UserRepository
+	sessionRepository *repository.SessionRepository
 }
 
-func NewAuthService(userRepository *repository.UserRepository) *AuthService {
+func NewAuthService(
+	userRepository *repository.UserRepository,
+	sessionRepository *repository.SessionRepository,
+) *AuthService {
 	return &AuthService{
-		userRepository: userRepository,
+		userRepository:    userRepository,
+		sessionRepository: sessionRepository,
 	}
 }
 
 func (s *AuthService) Signup(
 	email string, username string, password string,
-) (*model.User, *exception.ApiError) {
+) (*auth.UserSession, *exception.ApiError) {
 	apiErr := s.userRepository.EmailExists(email)
 	if apiErr != nil {
 		return nil, apiErr
@@ -50,5 +56,31 @@ func (s *AuthService) Signup(
 		return nil, apiErr
 	}
 
-	return user, nil
+	accessToken, err := auth.GenerateAccessToken(strconv.Itoa(user.Id))
+	if err != nil {
+		// TODO: log error
+		return nil, exception.NewApiError(
+			http.StatusInternalServerError, "failed to generate access token",
+		)
+	}
+
+	sessionCookie, err := auth.CreateSessionCookie(strconv.Itoa(user.Id))
+	if err != nil {
+		// TODO: log error
+		return nil, exception.NewApiError(
+			http.StatusInternalServerError, "failed to create session cookie",
+		)
+	}
+
+	_, apiErr = s.sessionRepository.CreateSession(user.Id, sessionCookie.Value)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	return &auth.UserSession{
+		Email:         user.Email,
+		Username:      user.Username,
+		AccessToken:   accessToken,
+		SessionCookie: sessionCookie,
+	}, nil
 }

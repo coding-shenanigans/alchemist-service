@@ -7,9 +7,9 @@ import (
 )
 
 func main() {
-  router := gin.Default()
+	router := gin.Default()
 
 	handler.RegisterEndpoints(router)
-  
+
 	router.Run(":9000")
 }

@@ -32,15 +32,23 @@ func (h *authHandler) signup(c *gin.Context) {
 		return
 	}
 
-	user, apiErr := h.authService.Signup(req.Email, req.Username, req.Password)
+	userSession, apiErr := h.authService.Signup(req.Email, req.Username, req.Password)
 	if apiErr != nil {
 		c.JSON(apiErr.Status(), dto.NewErrorResponse(apiErr.Error()))
 		return
 	}
 
-	// TODO: create user session
+	c.SetCookie(
+		userSession.SessionCookie.Name,
+		userSession.SessionCookie.Value,
+		userSession.SessionCookie.MaxAge,
+		userSession.SessionCookie.Path,
+		userSession.SessionCookie.Domain,
+		userSession.SessionCookie.Secure,
+		userSession.SessionCookie.HttpOnly,
+	)
 
-	res := dto.SignupResponse{User: user}
+	res := dto.SignupResponse{UserSession: userSession}
 
 	c.JSON(http.StatusCreated, res)
 }

@@ -20,9 +20,10 @@ func RegisterEndpoints(router *gin.Engine) {
 
 	// create repositories
 	userRepository := repository.NewUserRepository(db)
+	sessionRepository := repository.NewSessionRepository(db)
 
 	// create services
-	authService := service.NewAuthService(userRepository)
+	authService := service.NewAuthService(userRepository, sessionRepository)
 
 	// create handlers
 	opsHandler := newOpsHandler()
