@@ -16,7 +16,7 @@ const (
 )
 
 // Generates an access token.
-func GenerateAccessToken(userId string) (string, error) {
+func GenerateAccessToken(userId int) (string, error) {
 	token, err := generateToken(
 		accessKeyId,
 		config.AccessTokenSecret,
@@ -31,7 +31,7 @@ func GenerateAccessToken(userId string) (string, error) {
 }
 
 // Generates a refresh token.
-func GenerateRefreshToken(userId string) (string, error) {
+func GenerateRefreshToken(userId int) (string, error) {
 	token, err := generateToken(
 		refreshKeyId,
 		config.RefreshTokenSecret,
@@ -46,7 +46,7 @@ func GenerateRefreshToken(userId string) (string, error) {
 }
 
 // Creates a session cookie.
-func CreateSessionCookie(userId string) (*http.Cookie, error) {
+func CreateSessionCookie(userId int) (*http.Cookie, error) {
 	refreshToken, err := GenerateRefreshToken(userId)
 	if err != nil {
 		return nil, err
@@ -65,7 +65,7 @@ func CreateSessionCookie(userId string) (*http.Cookie, error) {
 
 // Generates an authentication token.
 func generateToken(
-	keyId string, secretKey string, durationSecs int, userId string,
+	keyId string, secretKey string, durationSecs int, userId int,
 ) (string, error) {
 	duration := time.Duration(durationSecs) * time.Second
 	issuedAt := time.Now()

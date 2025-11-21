@@ -2,7 +2,6 @@ package service
 
 import (
 	"net/http"
-	"strconv"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -57,7 +56,7 @@ func (s *AuthService) Signup(
 		return nil, apiErr
 	}
 
-	accessToken, err := auth.GenerateAccessToken(strconv.Itoa(user.Id))
+	accessToken, err := auth.GenerateAccessToken(user.Id)
 	if err != nil {
 		// TODO: log error
 		return nil, exception.NewApiError(
@@ -65,7 +64,7 @@ func (s *AuthService) Signup(
 		)
 	}
 
-	sessionCookie, err := auth.CreateSessionCookie(strconv.Itoa(user.Id))
+	sessionCookie, err := auth.CreateSessionCookie(user.Id)
 	if err != nil {
 		// TODO: log error
 		return nil, exception.NewApiError(
