@@ -89,7 +89,7 @@ func GetEnvInt(key string) int {
 	return value
 }
 
-// Gets a required environment variabe and converts it to a boolean.
+// Gets a required environment variable and converts it to a boolean.
 func GetEnvBool(key string) bool {
 	valueStr := os.Getenv(key)
 
