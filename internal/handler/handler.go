@@ -33,4 +33,5 @@ func RegisterEndpoints(router *gin.Engine) {
 	router.GET("/health", opsHandler.health)
 
 	router.POST("/auth/signup", authHandler.signup)
+	router.POST("/auth/signin", authHandler.signin)
 }
