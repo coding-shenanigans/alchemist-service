@@ -8,6 +8,7 @@ import (
 	"github.com/coding-shenanigans/alchemist-service/internal/auth"
 	"github.com/coding-shenanigans/alchemist-service/internal/dto"
 	"github.com/coding-shenanigans/alchemist-service/internal/exception"
+	"github.com/coding-shenanigans/alchemist-service/internal/model"
 	"github.com/coding-shenanigans/alchemist-service/internal/repository"
 )
 
@@ -56,6 +57,37 @@ func (s *AuthService) Signup(
 		return nil, apiErr
 	}
 
+	return s.createUserSession(user)
+}
+
+func (s *AuthService) Signin(
+	email string, password string,
+) (*dto.UserSession, *exception.ApiError) {
+	user, apiErr := s.userRepository.GetUserByEmail(email)
+	if apiErr != nil {
+		if apiErr.Status() == http.StatusNotFound {
+			return nil, exception.NewApiError(
+				http.StatusUnauthorized, "invalid email or password",
+			)
+		} else {
+			return nil, apiErr
+		}
+	}
+
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	if err != nil {
+		return nil, exception.NewApiError(
+			http.StatusUnauthorized, "invalid email or password",
+		)
+	}
+
+	return s.createUserSession(user)
+}
+
+// Creates a user session.
+func (s *AuthService) createUserSession(
+	user *model.User,
+) (*dto.UserSession, *exception.ApiError) {
 	accessToken, err := auth.GenerateAccessToken(user.Id)
 	if err != nil {
 		// TODO: log error
@@ -72,7 +104,7 @@ func (s *AuthService) Signup(
 		)
 	}
 
-	_, apiErr = s.sessionRepository.CreateSession(user.Id, sessionCookie.Value)
+	_, apiErr := s.sessionRepository.CreateSession(user.Id, sessionCookie.Value)
 	if apiErr != nil {
 		return nil, apiErr
 	}

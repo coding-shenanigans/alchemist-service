@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -108,6 +110,35 @@ func (r *UserRepository) CreateUser(
 		return nil, exception.NewApiError(
 			http.StatusInternalServerError, "failed to fetch the user",
 		)
+	}
+
+	return user, nil
+}
+
+// Gets a user by email.
+func (r *UserRepository) GetUserByEmail(
+	email string,
+) (*model.User, *exception.ApiError) {
+	user := new(model.User)
+	query := `
+		SELECT *
+		FROM users
+		WHERE email = $1
+		LIMIT 1;
+	`
+
+	err := r.db.Get(user, query, email)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, exception.NewApiError(
+				http.StatusNotFound, "the user was not found",
+			)
+		} else {
+			// TODO: log error
+			return nil, exception.NewApiError(
+				http.StatusInternalServerError, "failed to fetch the user",
+			)
+		}
 	}
 
 	return user, nil

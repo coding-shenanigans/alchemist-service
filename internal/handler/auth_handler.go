@@ -52,3 +52,32 @@ func (h *authHandler) signup(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, res)
 }
+
+func (h *authHandler) signin(c *gin.Context) {
+	req := new(dto.SigninRequest)
+
+	if err := c.ShouldBindJSON(req); err != nil {
+		c.JSON(http.StatusBadRequest, dto.NewErrorResponse(err.Error()))
+		return
+	}
+
+	userSession, apiErr := h.authService.Signin(req.Email, req.Password)
+	if apiErr != nil {
+		c.JSON(apiErr.Status(), dto.NewErrorResponse(apiErr.Error()))
+		return
+	}
+
+	c.SetCookie(
+		userSession.SessionCookie.Name,
+		userSession.SessionCookie.Value,
+		userSession.SessionCookie.MaxAge,
+		userSession.SessionCookie.Path,
+		userSession.SessionCookie.Domain,
+		userSession.SessionCookie.Secure,
+		userSession.SessionCookie.HttpOnly,
+	)
+
+	res := dto.SigninResponse{UserSession: userSession}
+
+	c.JSON(http.StatusOK, res)
+}
