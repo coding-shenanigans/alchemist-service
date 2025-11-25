@@ -34,4 +34,5 @@ func RegisterEndpoints(router *gin.Engine) {
 
 	router.POST("/auth/signup", authHandler.signup)
 	router.POST("/auth/signin", authHandler.signin)
+	router.POST("/auth/refresh", authHandler.refresh)
 }
