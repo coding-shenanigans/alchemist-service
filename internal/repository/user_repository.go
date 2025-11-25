@@ -115,6 +115,35 @@ func (r *UserRepository) CreateUser(
 	return user, nil
 }
 
+// Gets a user by id.
+func (r *UserRepository) GetUserById(
+	id int,
+) (*model.User, *exception.ApiError) {
+	user := new(model.User)
+	query := `
+		SELECT *
+		FROM users
+		WHERE id = $1
+		LIMIT 1;
+	`
+
+	err := r.db.Get(user, query, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, exception.NewApiError(
+				http.StatusNotFound, "the user was not found",
+			)
+		} else {
+			// TODO: log error
+			return nil, exception.NewApiError(
+				http.StatusInternalServerError, "failed to fetch the user",
+			)
+		}
+	}
+
+	return user, nil
+}
+
 // Gets a user by email.
 func (r *UserRepository) GetUserByEmail(
 	email string,

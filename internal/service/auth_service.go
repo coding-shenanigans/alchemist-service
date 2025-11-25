@@ -84,13 +84,33 @@ func (s *AuthService) Signin(
 	return s.createUserSession(user)
 }
 
+func (s *AuthService) Refresh(
+	refreshToken string,
+) (*dto.UserSession, *exception.ApiError) {
+	_, err := auth.ValidateToken(refreshToken)
+	if err != nil {
+		return nil, exception.NewApiError(http.StatusUnauthorized, err.Error())
+	}
+
+	session, apiErr := s.sessionRepository.GetSessionByRefreshToken(refreshToken)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	user, apiErr := s.userRepository.GetUserById(session.UserId)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	return s.refreshUserSession(user, session)
+}
+
 // Creates a user session.
 func (s *AuthService) createUserSession(
 	user *model.User,
 ) (*dto.UserSession, *exception.ApiError) {
 	accessToken, err := auth.GenerateAccessToken(user.Id)
 	if err != nil {
-		// TODO: log error
 		return nil, exception.NewApiError(
 			http.StatusInternalServerError, "failed to generate access token",
 		)
@@ -98,13 +118,43 @@ func (s *AuthService) createUserSession(
 
 	sessionCookie, err := auth.CreateSessionCookie(user.Id)
 	if err != nil {
-		// TODO: log error
 		return nil, exception.NewApiError(
 			http.StatusInternalServerError, "failed to create session cookie",
 		)
 	}
 
 	_, apiErr := s.sessionRepository.CreateSession(user.Id, sessionCookie.Value)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	return &dto.UserSession{
+		Email:         user.Email,
+		Username:      user.Username,
+		AccessToken:   accessToken,
+		SessionCookie: sessionCookie,
+	}, nil
+}
+
+// Refreshes a user session.
+func (s *AuthService) refreshUserSession(
+	user *model.User, session *model.Session,
+) (*dto.UserSession, *exception.ApiError) {
+	accessToken, err := auth.GenerateAccessToken(user.Id)
+	if err != nil {
+		return nil, exception.NewApiError(
+			http.StatusInternalServerError, "failed to generate access token",
+		)
+	}
+
+	sessionCookie, err := auth.CreateSessionCookie(user.Id)
+	if err != nil {
+		return nil, exception.NewApiError(
+			http.StatusInternalServerError, "failed to create session cookie",
+		)
+	}
+
+	apiErr := s.sessionRepository.RefreshSession(session.Id, sessionCookie.Value)
 	if apiErr != nil {
 		return nil, apiErr
 	}

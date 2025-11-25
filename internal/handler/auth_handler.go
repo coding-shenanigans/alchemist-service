@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/coding-shenanigans/alchemist-service/internal/config"
 	"github.com/coding-shenanigans/alchemist-service/internal/dto"
 	"github.com/coding-shenanigans/alchemist-service/internal/service"
 )
@@ -78,6 +79,37 @@ func (h *authHandler) signin(c *gin.Context) {
 	)
 
 	res := dto.SigninResponse{UserSession: userSession}
+
+	c.JSON(http.StatusOK, res)
+}
+
+func (h *authHandler) refresh(c *gin.Context) {
+	refreshToken, err := c.Cookie(config.SessionCookieName)
+	if err != nil {
+		c.JSON(
+			http.StatusUnauthorized,
+			dto.NewErrorResponse("a user session was not found"),
+		)
+		return
+	}
+
+	userSession, apiErr := h.authService.Refresh(refreshToken)
+	if apiErr != nil {
+		c.JSON(apiErr.Status(), dto.NewErrorResponse(apiErr.Error()))
+		return
+	}
+
+	c.SetCookie(
+		userSession.SessionCookie.Name,
+		userSession.SessionCookie.Value,
+		userSession.SessionCookie.MaxAge,
+		userSession.SessionCookie.Path,
+		userSession.SessionCookie.Domain,
+		userSession.SessionCookie.Secure,
+		userSession.SessionCookie.HttpOnly,
+	)
+
+	res := dto.RefreshResponse{UserSession: userSession}
 
 	c.JSON(http.StatusOK, res)
 }

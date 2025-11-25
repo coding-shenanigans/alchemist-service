@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"database/sql"
+	"errors"
 	"net/http"
 
 	"github.com/jmoiron/sqlx"
@@ -40,7 +42,8 @@ func (r *SessionRepository) CreateSession(
 	query = `
 		SELECT *
 		FROM sessions
-		WHERE id = $1;
+		WHERE id = $1
+		LIMIT 1;
 	`
 
 	err = r.db.Get(session, query, id)
@@ -52,4 +55,53 @@ func (r *SessionRepository) CreateSession(
 	}
 
 	return session, nil
+}
+
+// Gets a session by its refresh token.
+func (r *SessionRepository) GetSessionByRefreshToken(
+	refreshToken string,
+) (*model.Session, *exception.ApiError) {
+	session := new(model.Session)
+	query := `
+		SELECT *
+		FROM sessions
+		WHERE refresh_token = $1
+		LIMIT 1;
+	`
+
+	err := r.db.Get(session, query, refreshToken)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, exception.NewApiError(
+				http.StatusNotFound, "the session was not found",
+			)
+		} else {
+			// TODO: log error
+			return nil, exception.NewApiError(
+				http.StatusInternalServerError, "failed to fetch the session",
+			)
+		}
+	}
+
+	return session, nil
+}
+
+// Refreshes a session by updating its refresh token.
+func (r *SessionRepository) RefreshSession(
+	id int, refreshToken string,
+) *exception.ApiError {
+	query := `
+		UPDATE sessions
+		SET refresh_token = $1
+		WHERE id = $2;
+	`
+
+	_, err := r.db.Exec(query, refreshToken, id)
+	if err != nil {
+		return exception.NewApiError(
+			http.StatusInternalServerError, "failed to refresh the session",
+		)
+	}
+
+	return nil
 }

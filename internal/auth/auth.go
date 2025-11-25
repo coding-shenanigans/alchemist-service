@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -63,6 +64,33 @@ func CreateSessionCookie(userId int) (*http.Cookie, error) {
 	}, nil
 }
 
+// Checks if the token is valid.
+func ValidateToken(token string) (*jwt.Token, error) {
+	keyFunc := func(parsedToken *jwt.Token) (any, error) {
+		if _, ok := parsedToken.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf(
+				"unexpected signing method: %v", parsedToken.Header["alg"],
+			)
+		}
+
+		kid, ok := parsedToken.Header["kid"].(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to get the token's key identifier")
+		}
+
+		switch kid {
+		case accessKeyId:
+			return []byte(config.AccessTokenSecret), nil
+		case refreshKeyId:
+			return []byte(config.RefreshTokenSecret), nil
+		default:
+			return nil, fmt.Errorf("invalid key identifier: %v", kid)
+		}
+	}
+
+	return jwt.Parse(token, keyFunc)
+}
+
 // Generates an authentication token.
 func generateToken(
 	keyId string, secretKey string, durationSecs int, userId int,
@@ -72,7 +100,7 @@ func generateToken(
 	expiresAt := issuedAt.Add(duration)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, jwt.MapClaims{
-		"sub": userId,
+		"sub": strconv.Itoa(userId),
 		"iat": issuedAt.Unix(),
 		"exp": expiresAt.Unix(),
 	})
