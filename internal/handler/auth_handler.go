@@ -40,13 +40,13 @@ func (h *authHandler) signup(c *gin.Context) {
 	}
 
 	c.SetCookie(
-		userSession.SessionCookie.Name,
-		userSession.SessionCookie.Value,
-		userSession.SessionCookie.MaxAge,
-		userSession.SessionCookie.Path,
-		userSession.SessionCookie.Domain,
-		userSession.SessionCookie.Secure,
-		userSession.SessionCookie.HttpOnly,
+		config.SessionCookieName,
+		userSession.RefreshToken,
+		config.SessionCookieMaxAgeSecs,
+		config.SessionCookiePath,
+		config.SessionCookieDomain,
+		config.SessionCookieSecure,
+		config.SessionCookieHttpOnly,
 	)
 
 	res := &dto.SignupResponse{UserSession: userSession}
@@ -69,13 +69,13 @@ func (h *authHandler) signin(c *gin.Context) {
 	}
 
 	c.SetCookie(
-		userSession.SessionCookie.Name,
-		userSession.SessionCookie.Value,
-		userSession.SessionCookie.MaxAge,
-		userSession.SessionCookie.Path,
-		userSession.SessionCookie.Domain,
-		userSession.SessionCookie.Secure,
-		userSession.SessionCookie.HttpOnly,
+		config.SessionCookieName,
+		userSession.RefreshToken,
+		config.SessionCookieMaxAgeSecs,
+		config.SessionCookiePath,
+		config.SessionCookieDomain,
+		config.SessionCookieSecure,
+		config.SessionCookieHttpOnly,
 	)
 
 	res := &dto.SigninResponse{UserSession: userSession}
@@ -100,13 +100,13 @@ func (h *authHandler) refresh(c *gin.Context) {
 	}
 
 	c.SetCookie(
-		userSession.SessionCookie.Name,
-		userSession.SessionCookie.Value,
-		userSession.SessionCookie.MaxAge,
-		userSession.SessionCookie.Path,
-		userSession.SessionCookie.Domain,
-		userSession.SessionCookie.Secure,
-		userSession.SessionCookie.HttpOnly,
+		config.SessionCookieName,
+		userSession.RefreshToken,
+		config.SessionCookieMaxAgeSecs,
+		config.SessionCookiePath,
+		config.SessionCookieDomain,
+		config.SessionCookieSecure,
+		config.SessionCookieHttpOnly,
 	)
 
 	res := &dto.RefreshResponse{UserSession: userSession}

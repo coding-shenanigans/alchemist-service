@@ -2,7 +2,6 @@ package auth
 
 import (
 	"fmt"
-	"net/http"
 	"strconv"
 	"time"
 
@@ -40,24 +39,6 @@ func GenerateRefreshToken(userId int) (string, error) {
 	}
 
 	return token, nil
-}
-
-// Creates a session cookie.
-func CreateSessionCookie(userId int) (*http.Cookie, error) {
-	refreshToken, err := GenerateRefreshToken(userId)
-	if err != nil {
-		return nil, err
-	}
-
-	return &http.Cookie{
-		Name:     config.SessionCookieName,
-		Value:    refreshToken,
-		MaxAge:   config.SessionCookieMaxAgeSecs,
-		Path:     config.SessionCookiePath,
-		Domain:   config.SessionCookieDomain,
-		Secure:   config.SessionCookieSecure,
-		HttpOnly: config.SessionCookieHttpOnly,
-	}, nil
 }
 
 // Checks if the token is valid.

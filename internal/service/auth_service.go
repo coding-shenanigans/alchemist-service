@@ -125,23 +125,23 @@ func (s *AuthService) createUserSession(
 		)
 	}
 
-	sessionCookie, err := auth.CreateSessionCookie(user.Id)
+	refreshToken, err := auth.GenerateRefreshToken(user.Id)
 	if err != nil {
 		return nil, exception.NewApiError(
-			http.StatusInternalServerError, "failed to create session cookie",
+			http.StatusInternalServerError, "failed to generate refresh token",
 		)
 	}
 
-	_, apiErr := s.sessionRepository.CreateSession(user.Id, sessionCookie.Value)
+	_, apiErr := s.sessionRepository.CreateSession(user.Id, refreshToken)
 	if apiErr != nil {
 		return nil, apiErr
 	}
 
 	return &dto.UserSession{
-		Email:         user.Email,
-		Username:      user.Username,
-		AccessToken:   accessToken,
-		SessionCookie: sessionCookie,
+		Email:        user.Email,
+		Username:     user.Username,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
 	}, nil
 }
 
@@ -156,22 +156,22 @@ func (s *AuthService) refreshUserSession(
 		)
 	}
 
-	sessionCookie, err := auth.CreateSessionCookie(user.Id)
+	refreshToken, err := auth.GenerateRefreshToken(user.Id)
 	if err != nil {
 		return nil, exception.NewApiError(
-			http.StatusInternalServerError, "failed to create session cookie",
+			http.StatusInternalServerError, "failed to generate refresh token",
 		)
 	}
 
-	apiErr := s.sessionRepository.RefreshSession(session.Id, sessionCookie.Value)
+	apiErr := s.sessionRepository.RefreshSession(session.Id, refreshToken)
 	if apiErr != nil {
 		return nil, apiErr
 	}
 
 	return &dto.UserSession{
-		Email:         user.Email,
-		Username:      user.Username,
-		AccessToken:   accessToken,
-		SessionCookie: sessionCookie,
+		Email:        user.Email,
+		Username:     user.Username,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
 	}, nil
 }
