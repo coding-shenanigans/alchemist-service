@@ -105,6 +105,15 @@ func (s *AuthService) Refresh(
 	return s.refreshUserSession(user, session)
 }
 
+func (s *AuthService) Signout(refreshToken string) *exception.ApiError {
+	apiErr := s.sessionRepository.DeleteSessionByRefreshToken(refreshToken)
+	if apiErr != nil {
+		return apiErr
+	}
+
+	return nil
+}
+
 // Creates a user session.
 func (s *AuthService) createUserSession(
 	user *model.User,

@@ -98,8 +98,29 @@ func (r *SessionRepository) RefreshSession(
 
 	_, err := r.db.Exec(query, refreshToken, id)
 	if err != nil {
+		// TODO: log error
 		return exception.NewApiError(
 			http.StatusInternalServerError, "failed to refresh the session",
+		)
+	}
+
+	return nil
+}
+
+// Deletes a session by its refresh token.
+func (r *SessionRepository) DeleteSessionByRefreshToken(
+	refreshToken string,
+) *exception.ApiError {
+	query := `
+		DELETE FROM sessions
+		WHERE refresh_token = $1;
+	`
+
+	_, err := r.db.Exec(query, refreshToken)
+	if err != nil {
+		// TODO: log error
+		return exception.NewApiError(
+			http.StatusInternalServerError, "failed to delete the session",
 		)
 	}
 
