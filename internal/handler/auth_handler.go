@@ -49,7 +49,7 @@ func (h *authHandler) signup(c *gin.Context) {
 		userSession.SessionCookie.HttpOnly,
 	)
 
-	res := dto.SignupResponse{UserSession: userSession}
+	res := &dto.SignupResponse{UserSession: userSession}
 
 	c.JSON(http.StatusCreated, res)
 }
@@ -78,7 +78,7 @@ func (h *authHandler) signin(c *gin.Context) {
 		userSession.SessionCookie.HttpOnly,
 	)
 
-	res := dto.SigninResponse{UserSession: userSession}
+	res := &dto.SigninResponse{UserSession: userSession}
 
 	c.JSON(http.StatusOK, res)
 }
@@ -109,7 +109,38 @@ func (h *authHandler) refresh(c *gin.Context) {
 		userSession.SessionCookie.HttpOnly,
 	)
 
-	res := dto.RefreshResponse{UserSession: userSession}
+	res := &dto.RefreshResponse{UserSession: userSession}
+
+	c.JSON(http.StatusOK, res)
+}
+
+func (h *authHandler) signout(c *gin.Context) {
+	refreshToken, err := c.Cookie(config.SessionCookieName)
+	if err != nil {
+		c.JSON(
+			http.StatusUnauthorized,
+			dto.NewErrorResponse("a user session was not found"),
+		)
+		return
+	}
+
+	apiErr := h.authService.Signout(refreshToken)
+	if apiErr != nil {
+		c.JSON(apiErr.Status(), dto.NewErrorResponse(apiErr.Error()))
+		return
+	}
+
+	c.SetCookie(
+		config.SessionCookieName,
+		"",
+		-1,
+		config.SessionCookiePath,
+		config.SessionCookieDomain,
+		config.SessionCookieSecure,
+		config.SessionCookieHttpOnly,
+	)
+
+	res := &dto.SignoutResponse{Message: "signed out successfully"}
 
 	c.JSON(http.StatusOK, res)
 }

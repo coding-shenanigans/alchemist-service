@@ -9,17 +9,13 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/coding-shenanigans/alchemist-service/internal/config"
-)
-
-const (
-	accessKeyId  = "Access"
-	refreshKeyId = "Refresh"
+	"github.com/coding-shenanigans/alchemist-service/internal/constant"
 )
 
 // Generates an access token.
 func GenerateAccessToken(userId int) (string, error) {
 	token, err := generateToken(
-		accessKeyId,
+		constant.AccessKeyId,
 		config.AccessTokenSecret,
 		config.AccessTokenDurationSecs,
 		userId,
@@ -34,7 +30,7 @@ func GenerateAccessToken(userId int) (string, error) {
 // Generates a refresh token.
 func GenerateRefreshToken(userId int) (string, error) {
 	token, err := generateToken(
-		refreshKeyId,
+		constant.RefreshKeyId,
 		config.RefreshTokenSecret,
 		config.RefreshTokenDurationSecs,
 		userId,
@@ -79,16 +75,22 @@ func ValidateToken(token string) (*jwt.Token, error) {
 		}
 
 		switch kid {
-		case accessKeyId:
+		case constant.AccessKeyId:
 			return []byte(config.AccessTokenSecret), nil
-		case refreshKeyId:
+		case constant.RefreshKeyId:
 			return []byte(config.RefreshTokenSecret), nil
 		default:
 			return nil, fmt.Errorf("invalid key identifier: %v", kid)
 		}
 	}
 
-	return jwt.Parse(token, keyFunc)
+	parsedToken, err := jwt.Parse(token, keyFunc)
+	if err != nil {
+		// TODO: log error
+		return nil, fmt.Errorf("the token is not valid")
+	}
+
+	return parsedToken, nil
 }
 
 // Generates an authentication token.

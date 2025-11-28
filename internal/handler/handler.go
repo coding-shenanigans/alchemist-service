@@ -11,7 +11,7 @@ import (
 )
 
 // Registers all the endpoints handled by the service.
-func RegisterEndpoints(router *gin.Engine) {
+func RegisterEndpoints(public *gin.RouterGroup, protected *gin.RouterGroup) {
 	// connect to database
 	db, err := database.Connect()
 	if err != nil {
@@ -30,9 +30,10 @@ func RegisterEndpoints(router *gin.Engine) {
 	authHandler := newAuthHandler(authService)
 
 	// register endpoints
-	router.GET("/health", opsHandler.health)
+	public.GET("/health", opsHandler.health)
 
-	router.POST("/auth/signup", authHandler.signup)
-	router.POST("/auth/signin", authHandler.signin)
-	router.POST("/auth/refresh", authHandler.refresh)
+	public.POST("/auth/signup", authHandler.signup)
+	public.POST("/auth/signin", authHandler.signin)
+	public.POST("/auth/refresh", authHandler.refresh)
+	protected.POST("/auth/signout", authHandler.signout)
 }
