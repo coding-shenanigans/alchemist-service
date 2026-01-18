@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	"github.com/coding-shenanigans/alchemist-service/internal/handler"
@@ -9,6 +10,7 @@ import (
 
 func main() {
 	router := gin.Default()
+	router.Use(cors.Default())
 
 	publicRouterGroup := router.Group("/")
 	protectedRouterGroup := router.Group("/", middleware.AuthMiddleware())
