@@ -24,18 +24,20 @@ func (h *authHandler) signup(c *gin.Context) {
 	req := new(dto.SignupRequest)
 
 	if err := c.ShouldBindJSON(req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.NewErrorResponse(err.Error()))
+		status := http.StatusBadRequest
+		c.JSON(status, dto.NewErrorResponse(status, err.Error()))
 		return
 	}
 
 	if err := req.Validate(); err != nil {
-		c.JSON(http.StatusBadRequest, dto.NewErrorResponse(err.Error()))
+		status := http.StatusBadRequest
+		c.JSON(status, dto.NewErrorResponse(status, err.Error()))
 		return
 	}
 
 	userSession, apiErr := h.authService.Signup(req.Email, req.Username, req.Password)
 	if apiErr != nil {
-		c.JSON(apiErr.Status(), dto.NewErrorResponse(apiErr.Error()))
+		c.JSON(apiErr.Status(), dto.NewErrorResponseFromApiError(apiErr))
 		return
 	}
 
@@ -58,13 +60,14 @@ func (h *authHandler) signin(c *gin.Context) {
 	req := new(dto.SigninRequest)
 
 	if err := c.ShouldBindJSON(req); err != nil {
-		c.JSON(http.StatusBadRequest, dto.NewErrorResponse(err.Error()))
+		status := http.StatusBadRequest
+		c.JSON(status, dto.NewErrorResponse(status, err.Error()))
 		return
 	}
 
 	userSession, apiErr := h.authService.Signin(req.Email, req.Password)
 	if apiErr != nil {
-		c.JSON(apiErr.Status(), dto.NewErrorResponse(apiErr.Error()))
+		c.JSON(apiErr.Status(), dto.NewErrorResponseFromApiError(apiErr))
 		return
 	}
 
@@ -86,16 +89,16 @@ func (h *authHandler) signin(c *gin.Context) {
 func (h *authHandler) refresh(c *gin.Context) {
 	refreshToken, err := c.Cookie(config.SessionCookieName)
 	if err != nil {
+		status := http.StatusUnauthorized
 		c.JSON(
-			http.StatusUnauthorized,
-			dto.NewErrorResponse("a user session was not found"),
+			status, dto.NewErrorResponse(status, "a user session was not found"),
 		)
 		return
 	}
 
 	userSession, apiErr := h.authService.Refresh(refreshToken)
 	if apiErr != nil {
-		c.JSON(apiErr.Status(), dto.NewErrorResponse(apiErr.Error()))
+		c.JSON(apiErr.Status(), dto.NewErrorResponseFromApiError(apiErr))
 		return
 	}
 
@@ -117,16 +120,16 @@ func (h *authHandler) refresh(c *gin.Context) {
 func (h *authHandler) signout(c *gin.Context) {
 	refreshToken, err := c.Cookie(config.SessionCookieName)
 	if err != nil {
+		status := http.StatusUnauthorized
 		c.JSON(
-			http.StatusUnauthorized,
-			dto.NewErrorResponse("a user session was not found"),
+			status, dto.NewErrorResponse(status, "a user session was not found"),
 		)
 		return
 	}
 
 	apiErr := h.authService.Signout(refreshToken)
 	if apiErr != nil {
-		c.JSON(apiErr.Status(), dto.NewErrorResponse(apiErr.Error()))
+		c.JSON(apiErr.Status(), dto.NewErrorResponseFromApiError(apiErr))
 		return
 	}
 

@@ -15,18 +15,22 @@ func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
+			status := http.StatusUnauthorized
 			c.AbortWithStatusJSON(
-				http.StatusUnauthorized,
-				dto.NewErrorResponse("the Authorization header is required"),
+				status,
+				dto.NewErrorResponse(status, "the Authorization header is required"),
 			)
 			return
 		}
 
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
+			status := http.StatusUnauthorized
 			c.AbortWithStatusJSON(
-				http.StatusUnauthorized,
-				dto.NewErrorResponse("invalid format for the Authorization header"),
+				status,
+				dto.NewErrorResponse(
+					status, "invalid format for the Authorization header",
+				),
 			)
 			return
 		}
@@ -34,18 +38,18 @@ func AuthMiddleware() gin.HandlerFunc {
 		token := parts[1]
 		parsedToken, err := auth.ValidateToken(token)
 		if err != nil {
+			status := http.StatusUnauthorized
 			c.AbortWithStatusJSON(
-				http.StatusUnauthorized,
-				dto.NewErrorResponse("the token is not valid"),
+				status, dto.NewErrorResponse(status, "the token is not valid"),
 			)
 			return
 		}
 
 		kid, ok := parsedToken.Header["kid"].(string)
 		if !ok || kid != constant.AccessKeyId {
+			status := http.StatusUnauthorized
 			c.AbortWithStatusJSON(
-				http.StatusUnauthorized,
-				dto.NewErrorResponse("invalid token type"),
+				status, dto.NewErrorResponse(status, "invalid token type"),
 			)
 			return
 		}
