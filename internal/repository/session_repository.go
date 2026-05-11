@@ -7,6 +7,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
+	"github.com/coding-shenanigans/alchemist-service/internal/auth"
 	"github.com/coding-shenanigans/alchemist-service/internal/exception"
 	"github.com/coding-shenanigans/alchemist-service/internal/model"
 )
@@ -23,14 +24,21 @@ func NewSessionRepository(db *sqlx.DB) *SessionRepository {
 func (r *SessionRepository) CreateSession(
 	userId int, refreshToken string,
 ) (*model.Session, *exception.ApiError) {
+	jti, err := auth.ExtractJti(refreshToken)
+	if err != nil {
+		return nil, exception.NewApiError(
+			http.StatusInternalServerError, "failed to extract jti claim",
+		)
+	}
+
 	var id int
 	query := `
-		INSERT INTO sessions (user_id, refresh_token)
+		INSERT INTO sessions (user_id, refresh_token_id)
 		VALUES ($1, $2)
 		RETURNING id;
 	`
 
-	err := r.db.Get(&id, query, userId, refreshToken)
+	err = r.db.Get(&id, query, userId, jti)
 	if err != nil {
 		// TODO: log error
 		return nil, exception.NewApiError(
@@ -61,15 +69,22 @@ func (r *SessionRepository) CreateSession(
 func (r *SessionRepository) GetSessionByRefreshToken(
 	refreshToken string,
 ) (*model.Session, *exception.ApiError) {
+	jti, err := auth.ExtractJti(refreshToken)
+	if err != nil {
+		return nil, exception.NewApiError(
+			http.StatusInternalServerError, "failed to extract jti claim",
+		)
+	}
+
 	session := new(model.Session)
 	query := `
 		SELECT *
 		FROM sessions
-		WHERE refresh_token = $1
+		WHERE refresh_token_id = $1
 		LIMIT 1;
 	`
 
-	err := r.db.Get(session, query, refreshToken)
+	err = r.db.Get(session, query, jti)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, exception.NewApiError(
@@ -90,13 +105,20 @@ func (r *SessionRepository) GetSessionByRefreshToken(
 func (r *SessionRepository) RefreshSession(
 	id int, refreshToken string,
 ) *exception.ApiError {
+	jti, err := auth.ExtractJti(refreshToken)
+	if err != nil {
+		return exception.NewApiError(
+			http.StatusInternalServerError, "failed to extract jti claim",
+		)
+	}
+
 	query := `
 		UPDATE sessions
-		SET refresh_token = $1
+		SET refresh_token_id = $1
 		WHERE id = $2;
 	`
 
-	_, err := r.db.Exec(query, refreshToken, id)
+	_, err = r.db.Exec(query, jti, id)
 	if err != nil {
 		// TODO: log error
 		return exception.NewApiError(
@@ -111,12 +133,19 @@ func (r *SessionRepository) RefreshSession(
 func (r *SessionRepository) DeleteSessionByRefreshToken(
 	refreshToken string,
 ) *exception.ApiError {
+	jti, err := auth.ExtractJti(refreshToken)
+	if err != nil {
+		return exception.NewApiError(
+			http.StatusInternalServerError, "failed to extract jti claim",
+		)
+	}
+
 	query := `
 		DELETE FROM sessions
-		WHERE refresh_token = $1;
+		WHERE refresh_token_id = $1;
 	`
 
-	_, err := r.db.Exec(query, refreshToken)
+	_, err = r.db.Exec(query, jti)
 	if err != nil {
 		// TODO: log error
 		return exception.NewApiError(

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 
 	"github.com/coding-shenanigans/alchemist-service/internal/config"
 	"github.com/coding-shenanigans/alchemist-service/internal/constant"
@@ -74,6 +75,26 @@ func ValidateToken(token string) (*jwt.Token, error) {
 	return parsedToken, nil
 }
 
+// Extracts the JTI claim from the given token.
+func ExtractJti(token string) (string, error) {
+	parsedToken, err := ValidateToken(token)
+	if err != nil {
+		return "", err
+	}
+
+	claims, ok := parsedToken.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", fmt.Errorf("failed to extract the token's claims")
+	}
+
+	jti, ok := claims["jti"].(string)
+	if !ok {
+		return "", fmt.Errorf("failed to extract the jti claim")
+	}
+
+	return jti, nil
+}
+
 // Generates an authentication token.
 func generateToken(
 	keyId string, secretKey string, durationSecs int, userId int,
@@ -86,6 +107,7 @@ func generateToken(
 		"sub": strconv.Itoa(userId),
 		"iat": issuedAt.Unix(),
 		"exp": expiresAt.Unix(),
+		"jti": uuid.New().String(),
 	})
 	token.Header["kid"] = keyId
 
