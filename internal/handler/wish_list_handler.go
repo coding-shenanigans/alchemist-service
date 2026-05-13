@@ -3,9 +3,10 @@ package handler
 import (
 	"net/http"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/coding-shenanigans/alchemist-service/internal/dto"
 	"github.com/coding-shenanigans/alchemist-service/internal/service"
-	"github.com/gin-gonic/gin"
 )
 
 type wishListHandler struct {
