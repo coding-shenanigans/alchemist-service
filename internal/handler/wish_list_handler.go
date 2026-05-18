@@ -59,9 +59,19 @@ func (h *wishListHandler) getWishList(c *gin.Context) {
 }
 
 func (h *wishListHandler) listWishLists(c *gin.Context) {
-	// TODO: Implement function.
-	status := http.StatusNotImplemented
-	c.JSON(status, dto.NewErrorResponse(status, "not implemented yet"))
+	authenticatedUserId := c.GetInt(constant.AuthenticatedUserId)
+	username := c.Param("username")
+
+	wishLists, apiErr := h.wishListService.ListWishLists(
+		authenticatedUserId, username,
+	)
+	if apiErr != nil {
+		c.JSON(apiErr.Status(), dto.NewErrorResponseFromApiError(apiErr))
+		return
+	}
+
+	res := &dto.ListWishListResponse{WishLists: wishLists}
+	c.JSON(http.StatusOK, res)
 }
 
 func (h *wishListHandler) updateWishList(c *gin.Context) {
