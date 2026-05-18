@@ -81,6 +81,8 @@ func (r *UserRepository) UsernameExists(username string) *exception.ApiError {
 func (r *UserRepository) CreateUser(
 	email string, username string, password string,
 ) (*model.User, *exception.ApiError) {
+	// TODO: Remove unnecessary query. See create wish list implementation in the
+	// wish list repository.
 	var id int
 	query := `
 		INSERT INTO users (email, username, password)
@@ -157,6 +159,35 @@ func (r *UserRepository) GetUserByEmail(
 	`
 
 	err := r.db.Get(user, query, email)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, exception.NewApiError(
+				http.StatusNotFound, "the user was not found",
+			)
+		} else {
+			// TODO: log error
+			return nil, exception.NewApiError(
+				http.StatusInternalServerError, "failed to fetch the user",
+			)
+		}
+	}
+
+	return user, nil
+}
+
+// Gets a user by username.
+func (r *UserRepository) GetUserByUsername(
+	username string,
+) (*model.User, *exception.ApiError) {
+	user := new(model.User)
+	query := `
+		SELECT *
+		FROM users
+		WHERE username = $1
+		LIMIT 1;
+	`
+
+	err := r.db.Get(user, query, username)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, exception.NewApiError(

@@ -2,8 +2,11 @@ package validator
 
 import (
 	"fmt"
+	"maps"
 	"net/mail"
 	"regexp"
+	"slices"
+	"strings"
 )
 
 const (
@@ -17,6 +20,9 @@ const (
 	passwordUpperRegexString   = "[A-Z]{1}"        // 1+ uppercase characters
 	passwordNumberRegexString  = "[0-9]{1}"        // 1+ numbers
 	passwordSpecialRegexString = "[^a-zA-Z0-9]{1}" // 1+ special characters
+
+	wishListNameMinLength = 1
+	wishListNameMaxLength = 100
 )
 
 var (
@@ -25,6 +31,12 @@ var (
 	passwordUpperRegex   = regexp.MustCompile(passwordUpperRegexString)
 	passwordNumberRegex  = regexp.MustCompile(passwordNumberRegexString)
 	passwordSpecialRegex = regexp.MustCompile(passwordSpecialRegexString)
+
+	allowedWishListVisibilities = map[string]struct{}{
+		"public":       {},
+		"friends_only": {},
+		"private":      {},
+	}
 )
 
 // Checks if the email is valid.
@@ -103,4 +115,40 @@ func ValidatePassword(password string) error {
 	}
 
 	return nil
+}
+
+// Checks if the wish list name is valid.
+func ValidateWishListName(name string) error {
+	if len(name) < wishListNameMinLength {
+		return fmt.Errorf(
+			"the wish list name should have at least %d characters",
+			wishListNameMinLength,
+		)
+	}
+
+	if len(name) > wishListNameMaxLength {
+		return fmt.Errorf(
+			"the wish list name should not exceed %d characters",
+			wishListNameMaxLength,
+		)
+	}
+
+	return nil
+}
+
+// Checks if the wish list's visibility is valid.
+func ValidateWishListVisibility(visibility string) error {
+	if _, exists := allowedWishListVisibilities[visibility]; exists {
+		return nil
+	}
+
+	keys := slices.Collect(maps.Keys(allowedWishListVisibilities))
+	slices.Sort(keys)
+	allowedValues := strings.Join(keys, ", ")
+
+	return fmt.Errorf(
+		"the wish list visibility %q is not allowed. Allowed values: [%s]",
+		visibility,
+		allowedValues,
+	)
 }

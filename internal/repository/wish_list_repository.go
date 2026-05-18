@@ -21,10 +21,24 @@ func NewWishListRepository(db *sqlx.DB) *WishListRepository {
 func (r *WishListRepository) CreateWishList(
 	wishList *model.WishList,
 ) (*model.WishList, *exception.ApiError) {
-	// TODO: Implement function.
-	return nil, exception.NewApiError(
-		http.StatusNotImplemented, "not implemented yet",
+	newWishList := new(model.WishList)
+	query := `
+		INSERT INTO wish_lists (user_id, name, visibility)
+		VALUES ($1, $2, $3)
+		RETURNING *;
+	`
+
+	err := r.db.Get(
+		newWishList, query, wishList.UserId, wishList.Name, wishList.Visibility,
 	)
+	if err != nil {
+		// TODO: log error
+		return nil, exception.NewApiError(
+			http.StatusInternalServerError, "failed to create the wish list",
+		)
+	}
+
+	return newWishList, nil
 }
 
 // Gets a wish list by its id.

@@ -25,7 +25,7 @@ func RegisterEndpoints(public *gin.RouterGroup, protected *gin.RouterGroup) {
 
 	// create services
 	authService := service.NewAuthService(userRepository, sessionRepository)
-	wishListService := service.NewWishListService(wishListRepository)
+	wishListService := service.NewWishListService(userRepository, wishListRepository)
 
 	// create handlers
 	opsHandler := newOpsHandler()
@@ -40,9 +40,9 @@ func RegisterEndpoints(public *gin.RouterGroup, protected *gin.RouterGroup) {
 	public.POST("/auth/refresh", authHandler.refresh)
 	protected.POST("/auth/signout", authHandler.signout)
 
-	protected.POST("/wish-lists", wishListHandler.createWishList)
-	protected.GET("/wish-lists", wishListHandler.listWishLists)
-	protected.GET("/wish-lists/:id", wishListHandler.getWishList)
-	protected.PATCH("/wish-lists/:id", wishListHandler.updateWishList)
-	protected.DELETE("/wish-lists/:id", wishListHandler.deleteWishList)
+	protected.POST("/users/:username/wish-lists", wishListHandler.createWishList)
+	protected.GET("/users/:username/wish-lists", wishListHandler.listWishLists)
+	protected.GET("/users/:username/wish-lists/:id", wishListHandler.getWishList)
+	protected.PATCH("/users/:username/wish-lists/:id", wishListHandler.updateWishList)
+	protected.DELETE("/users/:username/wish-lists/:id", wishListHandler.deleteWishList)
 }
