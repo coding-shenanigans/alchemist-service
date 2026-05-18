@@ -53,12 +53,24 @@ func (r *WishListRepository) GetWishListById(
 
 // Gets all the wish lists.
 func (r *WishListRepository) ListWishLists(
-	pageSize int, pageToken string, filter string,
+	userId int,
 ) ([]*model.WishList, *exception.ApiError) {
-	// TODO: Implement function.
-	return nil, exception.NewApiError(
-		http.StatusNotImplemented, "not implemented yet",
-	)
+	wishLists := []*model.WishList{}
+	query := `
+		SELECT *
+		FROM wish_lists
+		WHERE user_id = $1
+	`
+
+	err := r.db.Select(&wishLists, query, userId)
+	if err != nil {
+		// TODO: log error
+		return nil, exception.NewApiError(
+			http.StatusInternalServerError, "failed to fetch the wish lists",
+		)
+	}
+
+	return wishLists, nil
 }
 
 // Updates a wish list.
