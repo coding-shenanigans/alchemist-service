@@ -43,12 +43,24 @@ func (r *WishListRepository) CreateWishList(
 
 // Gets a wish list by its id.
 func (r *WishListRepository) GetWishListById(
-	id int,
+	userId int, wishListId int,
 ) (*model.WishList, *exception.ApiError) {
-	// TODO: Implement function.
-	return nil, exception.NewApiError(
-		http.StatusNotImplemented, "not implemented yet",
-	)
+	wishList := new(model.WishList)
+	query := `
+		SELECT *
+		FROM wish_lists
+		WHERE user_id = $1 AND id = $2
+	`
+
+	err := r.db.Get(wishList, query, userId, wishListId)
+	if err != nil {
+		// TODO: log error
+		return nil, exception.NewApiError(
+			http.StatusInternalServerError, "failed to fetch the wish list",
+		)
+	}
+
+	return wishList, nil
 }
 
 // Gets all the wish lists.

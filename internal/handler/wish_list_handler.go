@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
@@ -53,9 +54,25 @@ func (h *wishListHandler) createWishList(c *gin.Context) {
 }
 
 func (h *wishListHandler) getWishList(c *gin.Context) {
-	// TODO: Implement function.
-	status := http.StatusNotImplemented
-	c.JSON(status, dto.NewErrorResponse(status, "not implemented yet"))
+	authenticatedUserId := c.GetInt(constant.AuthenticatedUserId)
+	username := c.Param("username")
+	wishListId, err := strconv.Atoi(c.Param("wishListId"))
+	if err != nil {
+		status := http.StatusBadRequest
+		c.JSON(status, dto.NewErrorResponse(status, "invalid wish list id"))
+		return
+	}
+
+	wishList, apiErr := h.wishListService.GetWishList(
+		authenticatedUserId, username, wishListId,
+	)
+	if apiErr != nil {
+		c.JSON(apiErr.Status(), dto.NewErrorResponseFromApiError(apiErr))
+		return
+	}
+
+	res := &dto.GetWishListResponse{WishList: wishList}
+	c.JSON(http.StatusOK, res)
 }
 
 func (h *wishListHandler) listWishLists(c *gin.Context) {
