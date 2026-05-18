@@ -49,12 +49,28 @@ func (s *WishListService) CreateWishList(
 }
 
 func (s *WishListService) GetWishList(
-	id int,
+	authenticatedUserId int, username string, wishListId int,
 ) (*model.WishList, *exception.ApiError) {
-	// TODO: Implement function.
-	return nil, exception.NewApiError(
-		http.StatusNotImplemented, "not implemented yet",
+	user, apiErr := s.userRepository.GetUserByUsername(username)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	if user.Id != authenticatedUserId {
+		return nil, exception.NewApiError(
+			http.StatusForbidden,
+			"you do not have permission to modify this user's data",
+		)
+	}
+
+	wishList, apiErr := s.wishListRepository.GetWishListById(
+		authenticatedUserId, wishListId,
 	)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	return wishList, nil
 }
 
 func (s *WishListService) ListWishLists(

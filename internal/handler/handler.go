@@ -42,7 +42,7 @@ func RegisterEndpoints(public *gin.RouterGroup, protected *gin.RouterGroup) {
 
 	protected.POST("/users/:username/wish-lists", wishListHandler.createWishList)
 	protected.GET("/users/:username/wish-lists", wishListHandler.listWishLists)
-	protected.GET("/users/:username/wish-lists/:id", wishListHandler.getWishList)
-	protected.PATCH("/users/:username/wish-lists/:id", wishListHandler.updateWishList)
-	protected.DELETE("/users/:username/wish-lists/:id", wishListHandler.deleteWishList)
+	protected.GET("/users/:username/wish-lists/:wishListId", wishListHandler.getWishList)
+	protected.PATCH("/users/:username/wish-lists/:wishListId", wishListHandler.updateWishList)
+	protected.DELETE("/users/:username/wish-lists/:wishListId", wishListHandler.deleteWishList)
 }
