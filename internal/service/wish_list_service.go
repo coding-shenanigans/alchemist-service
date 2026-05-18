@@ -9,24 +9,43 @@ import (
 )
 
 type WishListService struct {
+	userRepository     *repository.UserRepository
 	wishListRepository *repository.WishListRepository
 }
 
 func NewWishListService(
+	userRepository *repository.UserRepository,
 	wishListRepository *repository.WishListRepository,
 ) *WishListService {
 	return &WishListService{
+		userRepository:     userRepository,
 		wishListRepository: wishListRepository,
 	}
 }
 
 func (s *WishListService) CreateWishList(
-	wishList *model.WishList,
+	authenticatedUserId int, username string, wishList *model.WishList,
 ) (*model.WishList, *exception.ApiError) {
-	// TODO: Implement function.
-	return nil, exception.NewApiError(
-		http.StatusNotImplemented, "not implemented yet",
-	)
+	user, apiErr := s.userRepository.GetUserByUsername(username)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	if user.Id != authenticatedUserId {
+		return nil, exception.NewApiError(
+			http.StatusForbidden,
+			"you do not have permission to modify this user's data",
+		)
+	}
+
+	wishList.UserId = authenticatedUserId
+
+	newWishList, apiErr := s.wishListRepository.CreateWishList(wishList)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	return newWishList, nil
 }
 
 func (s *WishListService) GetWishList(

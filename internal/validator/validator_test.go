@@ -88,3 +88,51 @@ func TestValidatePassword(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateWishListName(t *testing.T) {
+	testCases := []struct {
+		name         string
+		wishListName string
+		expectError  bool
+	}{
+		{"BelowMinLength", "", true},
+		{"ExceedMaxLength", strings.Repeat("a", 101), true},
+		{"Valid", "Splendid Ninja Training", false},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := ValidateWishListName(tc.wishListName)
+
+			if tc.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestValidateWishListVisibility(t *testing.T) {
+	testCases := []struct {
+		name        string
+		visibility  string
+		expectError bool
+	}{
+		{"Blank", "", true},
+		{"InvalidVisibility", "unknown", true},
+		{"Valid", "friends_only", false},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := ValidateWishListVisibility(tc.visibility)
+
+			if tc.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
