@@ -96,9 +96,21 @@ func (r *WishListRepository) UpdateWishList(
 }
 
 // Deletes a wish list by its id.
-func (r *WishListRepository) DeleteWishListById(id int) *exception.ApiError {
-	// TODO: Implement function.
-	return exception.NewApiError(
-		http.StatusNotImplemented, "not implemented yet",
-	)
+func (r *WishListRepository) DeleteWishListById(
+	userId int, wishListId int,
+) *exception.ApiError {
+	query := `
+		DELETE FROM wish_lists
+		WHERE user_id = $1 AND id = $2;
+	`
+
+	_, err := r.db.Exec(query, userId, wishListId)
+	if err != nil {
+		// TODO: log error
+		return exception.NewApiError(
+			http.StatusInternalServerError, "failed to delete the wish list",
+		)
+	}
+
+	return nil
 }
