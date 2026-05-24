@@ -1,5 +1,21 @@
 -- This script sets up the PostgreSQL database.
 
+-- This function automatically sets the `updated_at` column to the current
+-- timestamp when a row is updated.
+CREATE OR REPLACE FUNCTION update_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF OLD IS DISTINCT FROM NEW THEN
+    NEW.updated_at = NOW();
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE PLPGSQL;
+
+-------------------------------
+-- Set up the `users` table. --
+-------------------------------
+
 -- Create the `users` table.
 CREATE TABLE IF NOT EXISTS users (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -9,6 +25,16 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Apply the `update_timestamp` trigger to the `users` table.
+CREATE OR REPLACE TRIGGER users_update_timestamp
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION update_timestamp();
+
+----------------------------------
+-- Set up the `sessions` table. --
+----------------------------------
 
 -- Create the `sessions` table.
 CREATE TABLE IF NOT EXISTS sessions (
@@ -25,15 +51,30 @@ CREATE TABLE IF NOT EXISTS sessions (
     ON DELETE CASCADE
 );
 
--- Create an index for the `sessions.user_id` foreign key.
-CREATE INDEX IF NOT EXISTS idx_sessions_user_id_fkey ON sessions(user_id);
+-- Create an index for the `sessions.user_id` column.
+CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
+
+-- Apply the `update_timestamp` trigger to the `sessions` table.
+CREATE OR REPLACE TRIGGER sessions_update_timestamp
+BEFORE UPDATE ON sessions
+FOR EACH ROW
+EXECUTE FUNCTION update_timestamp();
+
+------------------------------------
+-- Set up the `wish_lists` table. --
+------------------------------------
+
+-- Create an enum type for the `wish_lists.visibility` column.
+CREATE TYPE wish_lists_visibility_type AS ENUM (
+  'public', 'friends_only', 'private'
+);
 
 -- Create the `wish_lists` table.
 CREATE TABLE IF NOT EXISTS wish_lists (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id BIGINT NOT NULL,
   name VARCHAR(255) NOT NULL,
-  visibility VARCHAR(20) NOT NULL DEFAULT 'private',
+  visibility wish_lists_visibility_type NOT NULL DEFAULT 'private',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
@@ -41,39 +82,14 @@ CREATE TABLE IF NOT EXISTS wish_lists (
   CONSTRAINT wish_lists_user_id_fkey
     FOREIGN KEY(user_id) 
     REFERENCES users(id) 
-    ON DELETE CASCADE,
-
-  -- Define allowed values for the `visibility` column.
-  CONSTRAINT wish_lists_visibility_check
-    CHECK (visibility IN ('public', 'friends_only', 'private'))
+    ON DELETE CASCADE
 );
 
--- Create an index for the `wish_lists.user_id` foreign key.
-CREATE INDEX IF NOT EXISTS idx_wish_lists_user_id_fkey ON wish_lists(user_id);
-
--- Create a trigger to automatically update the `updated_at` column.
-CREATE OR REPLACE FUNCTION update_timestamp()
-RETURNS TRIGGER LANGUAGE PLPGSQL AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$;
-
--- Apply the `update_timestamp` trigger to the `users` table.
-CREATE OR REPLACE TRIGGER update_users_timestamp
-BEFORE UPDATE ON users
-FOR EACH ROW
-EXECUTE FUNCTION update_timestamp();
-
--- Apply the `update_timestamp` trigger to the `sessions` table.
-CREATE OR REPLACE TRIGGER update_sessions_timestamp
-BEFORE UPDATE ON sessions
-FOR EACH ROW
-EXECUTE FUNCTION update_timestamp();
+-- Create an index for the `wish_lists.user_id` column.
+CREATE INDEX IF NOT EXISTS idx_wish_lists_user_id ON wish_lists(user_id);
 
 -- Apply the `update_timestamp` trigger to the `wish_lists` table.
-CREATE OR REPLACE TRIGGER update_wish_lists_timestamp
+CREATE OR REPLACE TRIGGER wish_lists_update_timestamp
 BEFORE UPDATE ON wish_lists
 FOR EACH ROW
 EXECUTE FUNCTION update_timestamp();
