@@ -92,9 +92,39 @@ func (h *wishListHandler) listWishLists(c *gin.Context) {
 }
 
 func (h *wishListHandler) updateWishList(c *gin.Context) {
-	// TODO: Implement function.
-	status := http.StatusNotImplemented
-	c.JSON(status, dto.NewErrorResponse(status, "not implemented yet"))
+	req := new(dto.UpdateWishListRequest)
+
+	if err := c.ShouldBindJSON(req); err != nil {
+		status := http.StatusBadRequest
+		c.JSON(status, dto.NewErrorResponse(status, err.Error()))
+		return
+	}
+
+	if err := req.Validate(); err != nil {
+		status := http.StatusBadRequest
+		c.JSON(status, dto.NewErrorResponse(status, err.Error()))
+		return
+	}
+
+	authenticatedUserId := c.GetInt(constant.AuthenticatedUserId)
+	username := c.Param("username")
+	wishListId, err := strconv.Atoi(c.Param("wishListId"))
+	if err != nil {
+		status := http.StatusBadRequest
+		c.JSON(status, dto.NewErrorResponse(status, "invalid wish list id"))
+		return
+	}
+
+	wishList, apiErr := h.wishListService.UpdateWishList(
+		authenticatedUserId, username, wishListId, req.Name, req.Visibility,
+	)
+	if apiErr != nil {
+		c.JSON(apiErr.Status(), dto.NewErrorResponseFromApiError(apiErr))
+		return
+	}
+
+	res := &dto.UpdateWishListResponse{WishList: wishList}
+	c.JSON(http.StatusOK, res)
 }
 
 func (h *wishListHandler) deleteWishList(c *gin.Context) {
