@@ -97,12 +97,47 @@ func (s *WishListService) ListWishLists(
 }
 
 func (s *WishListService) UpdateWishList(
-	wishList *model.WishList, updateMask []string,
+	authenticatedUserId int,
+	username string,
+	wishListId int,
+	name *string,
+	visibility *string,
 ) (*model.WishList, *exception.ApiError) {
-	// TODO: Implement function.
-	return nil, exception.NewApiError(
-		http.StatusNotImplemented, "not implemented yet",
+	user, apiErr := s.userRepository.GetUserByUsername(username)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	if user.Id != authenticatedUserId {
+		return nil, exception.NewApiError(
+			http.StatusForbidden,
+			"you do not have permission to modify this user's data",
+		)
+	}
+
+	wishList, apiErr := s.wishListRepository.GetWishListById(
+		authenticatedUserId, wishListId,
 	)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	if name != nil {
+		wishList.Name = *name
+	}
+
+	if visibility != nil {
+		wishList.Visibility = *visibility
+	}
+
+	wishList, apiErr = s.wishListRepository.UpdateWishList(
+		authenticatedUserId, wishList,
+	)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	return wishList, nil
 }
 
 func (s *WishListService) DeleteWishList(

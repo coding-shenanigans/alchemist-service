@@ -87,12 +87,34 @@ func (r *WishListRepository) ListWishLists(
 
 // Updates a wish list.
 func (r *WishListRepository) UpdateWishList(
-	wishList *model.WishList, updateMask []string,
+	userId int, wishList *model.WishList,
 ) (*model.WishList, *exception.ApiError) {
-	// TODO: Implement function.
-	return nil, exception.NewApiError(
-		http.StatusNotImplemented, "not implemented yet",
+	updatedWishList := new(model.WishList)
+	query := `
+		UPDATE wish_lists
+		SET 
+			name = $1,
+			visibility = $2
+		WHERE user_id = $3 AND id = $4
+		RETURNING *;
+	`
+
+	err := r.db.Get(
+		updatedWishList,
+		query,
+		wishList.Name,
+		wishList.Visibility,
+		wishList.UserId,
+		wishList.Id,
 	)
+	if err != nil {
+		// TODO: log error
+		return nil, exception.NewApiError(
+			http.StatusInternalServerError, "failed to update the wish list",
+		)
+	}
+
+	return updatedWishList, nil
 }
 
 // Deletes a wish list by its id.
