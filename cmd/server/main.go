@@ -14,9 +14,14 @@ func main() {
 	router.Use(cors.New(config.GetCorsConfig()))
 
 	publicRouterGroup := router.Group("/")
-	protectedRouterGroup := router.Group("/", middleware.AuthMiddleware())
+	protectedRouterGroup := router.Group("/", middleware.RequiredAuthMiddleware())
+	hybridRouterGroup := router.Group("/", middleware.OptionalAuthMiddleware())
 
-	handler.RegisterEndpoints(publicRouterGroup, protectedRouterGroup)
+	handler.RegisterEndpoints(
+		publicRouterGroup,
+		protectedRouterGroup,
+		hybridRouterGroup,
+	)
 
 	router.Run(":9000")
 }

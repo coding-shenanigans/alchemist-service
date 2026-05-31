@@ -11,7 +11,9 @@ import (
 )
 
 // Registers all the endpoints handled by the service.
-func RegisterEndpoints(public *gin.RouterGroup, protected *gin.RouterGroup) {
+func RegisterEndpoints(
+	public *gin.RouterGroup, protected *gin.RouterGroup, hybrid *gin.RouterGroup,
+) {
 	// connect to database
 	db, err := database.Connect()
 	if err != nil {
@@ -41,8 +43,11 @@ func RegisterEndpoints(public *gin.RouterGroup, protected *gin.RouterGroup) {
 	protected.POST("/auth/signout", authHandler.signout)
 
 	protected.POST("/users/:username/wish-lists", wishListHandler.createWishList)
+
+	// TODO: Change read operations for wish lists to be hybrid endpoints.
 	protected.GET("/users/:username/wish-lists", wishListHandler.listWishLists)
 	protected.GET("/users/:username/wish-lists/:wishListId", wishListHandler.getWishList)
+
 	protected.PATCH("/users/:username/wish-lists/:wishListId", wishListHandler.updateWishList)
 	protected.DELETE("/users/:username/wish-lists/:wishListId", wishListHandler.deleteWishList)
 }
