@@ -5,4 +5,8 @@ const (
 	RefreshKeyId = "refresh"
 
 	AuthenticatedUserId = "authenticatedUserId"
+
+	WishListVisibilityPublic      = "public"
+	WishListVisibilityFriendsOnly = "friends_only"
+	WishListVisibilityPrivate     = "private"
 )

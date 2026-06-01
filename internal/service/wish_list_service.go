@@ -3,6 +3,7 @@ package service
 import (
 	"net/http"
 
+	"github.com/coding-shenanigans/alchemist-service/internal/constant"
 	"github.com/coding-shenanigans/alchemist-service/internal/exception"
 	"github.com/coding-shenanigans/alchemist-service/internal/model"
 	"github.com/coding-shenanigans/alchemist-service/internal/repository"
@@ -38,7 +39,7 @@ func (s *WishListService) CreateWishList(
 		)
 	}
 
-	wishList.UserId = authenticatedUserId
+	wishList.UserId = user.Id
 
 	newWishList, apiErr := s.wishListRepository.CreateWishList(wishList)
 	if apiErr != nil {
@@ -56,18 +57,20 @@ func (s *WishListService) GetWishList(
 		return nil, apiErr
 	}
 
-	if user.Id != authenticatedUserId {
-		return nil, exception.NewApiError(
-			http.StatusForbidden,
-			"you do not have permission to modify this user's data",
-		)
-	}
-
 	wishList, apiErr := s.wishListRepository.GetWishListById(
-		authenticatedUserId, wishListId,
+		user.Id, wishListId,
 	)
 	if apiErr != nil {
 		return nil, apiErr
+	}
+
+	// TODO: Check actual friendship when that feature is added.
+	isFriend := false
+
+	if !s.hasAccess(authenticatedUserId, wishList, isFriend) {
+		return nil, exception.NewApiError(
+			http.StatusNotFound, "the wish list was not found",
+		)
 	}
 
 	return wishList, nil
@@ -88,7 +91,7 @@ func (s *WishListService) ListWishLists(
 		)
 	}
 
-	wishLists, apiErr := s.wishListRepository.ListWishLists(authenticatedUserId)
+	wishLists, apiErr := s.wishListRepository.ListWishLists(user.Id)
 	if apiErr != nil {
 		return nil, apiErr
 	}
@@ -116,7 +119,7 @@ func (s *WishListService) UpdateWishList(
 	}
 
 	wishList, apiErr := s.wishListRepository.GetWishListById(
-		authenticatedUserId, wishListId,
+		user.Id, wishListId,
 	)
 	if apiErr != nil {
 		return nil, apiErr
@@ -131,7 +134,7 @@ func (s *WishListService) UpdateWishList(
 	}
 
 	wishList, apiErr = s.wishListRepository.UpdateWishList(
-		authenticatedUserId, wishList,
+		user.Id, wishList,
 	)
 	if apiErr != nil {
 		return nil, apiErr
@@ -155,12 +158,25 @@ func (s *WishListService) DeleteWishList(
 		)
 	}
 
-	apiErr = s.wishListRepository.DeleteWishListById(
-		authenticatedUserId, wishListId,
-	)
+	apiErr = s.wishListRepository.DeleteWishListById(user.Id, wishListId)
 	if apiErr != nil {
 		return apiErr
 	}
 
 	return nil
+}
+
+// Checks if a user has access to a wish list.
+func (s *WishListService) hasAccess(
+	authenticatedUserId int, wishList *model.WishList, isFriend bool,
+) bool {
+	if wishList.Visibility == constant.WishListVisibilityPublic {
+		return true
+	}
+
+	if wishList.Visibility == constant.WishListVisibilityFriendsOnly && isFriend {
+		return true
+	}
+
+	return wishList.UserId == authenticatedUserId
 }

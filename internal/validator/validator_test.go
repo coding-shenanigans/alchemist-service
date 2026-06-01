@@ -8,24 +8,42 @@ import (
 )
 
 func TestValidateEmail(t *testing.T) {
-	testCases := []struct {
+	tests := []struct {
 		name        string
 		email       string
 		expectError bool
 	}{
-		{"Blank", "", true},
-		{"MissingLocalPart", "@konoha.gov", true},
-		{"MissingAtSign", "rock.lee.konoha.gov", true},
-		{"MissingDomain", "rock.lee@", true},
-		{"ExceedMaxLength", strings.Repeat("a", 255) + "@konoha.gov", true},
-		{"Valid", "rock.lee@konoha.gov", false},
+		{
+			name:        "blank",
+			email:       "",
+			expectError: true},
+		{
+			name:        "missing_local_part",
+			email:       "@konoha.gov",
+			expectError: true},
+		{
+			name:        "missing_at_sign",
+			email:       "rock.lee.konoha.gov",
+			expectError: true},
+		{
+			name:        "missing_domain",
+			email:       "rock.lee@",
+			expectError: true},
+		{
+			name:        "exceed_max_langth",
+			email:       strings.Repeat("a", 255) + "@konoha.gov",
+			expectError: true},
+		{
+			name:        "valid",
+			email:       "rock.lee@konoha.gov",
+			expectError: false},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			err := ValidateEmail(tc.email)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateEmail(tt.email)
 
-			if tc.expectError {
+			if tt.expectError {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
@@ -35,23 +53,43 @@ func TestValidateEmail(t *testing.T) {
 }
 
 func TestValidateUsername(t *testing.T) {
-	testCases := []struct {
+	tests := []struct {
 		name        string
 		username    string
 		expectError bool
 	}{
-		{"Blank", "", true},
-		{"BelowMinLength", "rl", true},
-		{"ExceedMaxLength", strings.Repeat("a", 37), true},
-		{"InvalidCharacters", "rock.lee", true},
-		{"Valid", "rock_lee", false},
+		{
+			name:        "blank",
+			username:    "",
+			expectError: true,
+		},
+		{
+			name:        "below_min_length",
+			username:    "rl",
+			expectError: true,
+		},
+		{
+			name:        "exceed_max_length",
+			username:    strings.Repeat("a", 37),
+			expectError: true,
+		},
+		{
+			name:        "invalid_characters",
+			username:    "rock.lee",
+			expectError: true,
+		},
+		{
+			name:        "valid",
+			username:    "rock_lee",
+			expectError: false,
+		},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			err := ValidateUsername(tc.username)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateUsername(tt.username)
 
-			if tc.expectError {
+			if tt.expectError {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
@@ -61,26 +99,58 @@ func TestValidateUsername(t *testing.T) {
 }
 
 func TestValidatePassword(t *testing.T) {
-	testCases := []struct {
+	tests := []struct {
 		name        string
 		password    string
 		expectError bool
 	}{
-		{"Blank", "", true},
-		{"BelowMinLength", "youth", true},
-		{"ExceedMaxLength", strings.Repeat("aA1.", 73), true},
-		{"MissingLowercaseCharacter", "POW3R.OF.YOUTH", true},
-		{"MissingUppercaseCharacter", "pow3r.of.youth", true},
-		{"MissingNumber", "power.of.YOUTH", true},
-		{"MissingSpecialCharacter", "pow3rofYOUTH", true},
-		{"Valid", "pow3r.of.YOUTH", false},
+		{
+			name:        "blank",
+			password:    "",
+			expectError: true,
+		},
+		{
+			name:        "below_min_length",
+			password:    "youth",
+			expectError: true,
+		},
+		{
+			name:        "exceed_max_length",
+			password:    strings.Repeat("aA1.", 73),
+			expectError: true,
+		},
+		{
+			name:        "missing_lowercase_character",
+			password:    "POW3R.OF.YOUTH",
+			expectError: true,
+		},
+		{
+			name:        "missing_uppercase_character",
+			password:    "pow3r.of.youth",
+			expectError: true,
+		},
+		{
+			name:        "missing_number",
+			password:    "power.of.YOUTH",
+			expectError: true,
+		},
+		{
+			name:        "missing_special_character",
+			password:    "pow3rofYOUTH",
+			expectError: true,
+		},
+		{
+			name:        "valid",
+			password:    "pow3r.of.YOUTH",
+			expectError: false,
+		},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			err := ValidatePassword(tc.password)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidatePassword(tt.password)
 
-			if tc.expectError {
+			if tt.expectError {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
@@ -90,21 +160,33 @@ func TestValidatePassword(t *testing.T) {
 }
 
 func TestValidateWishListName(t *testing.T) {
-	testCases := []struct {
+	tests := []struct {
 		name         string
 		wishListName string
 		expectError  bool
 	}{
-		{"BelowMinLength", "", true},
-		{"ExceedMaxLength", strings.Repeat("a", 101), true},
-		{"Valid", "Splendid Ninja Training", false},
+		{
+			name:         "below_min_length",
+			wishListName: "",
+			expectError:  true,
+		},
+		{
+			name:         "exceed_max_length",
+			wishListName: strings.Repeat("a", 101),
+			expectError:  true,
+		},
+		{
+			name:         "valid",
+			wishListName: "Splendid Ninja Training",
+			expectError:  false,
+		},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			err := ValidateWishListName(tc.wishListName)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateWishListName(tt.wishListName)
 
-			if tc.expectError {
+			if tt.expectError {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
@@ -114,21 +196,33 @@ func TestValidateWishListName(t *testing.T) {
 }
 
 func TestValidateWishListVisibility(t *testing.T) {
-	testCases := []struct {
+	tests := []struct {
 		name        string
 		visibility  string
 		expectError bool
 	}{
-		{"Blank", "", true},
-		{"InvalidVisibility", "unknown", true},
-		{"Valid", "friends_only", false},
+		{
+			name:        "blank",
+			visibility:  "",
+			expectError: true,
+		},
+		{
+			name:        "invalid_visibility",
+			visibility:  "unknown",
+			expectError: true,
+		},
+		{
+			name:        "valid",
+			visibility:  "friends_only",
+			expectError: false,
+		},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			err := ValidateWishListVisibility(tc.visibility)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateWishListVisibility(tt.visibility)
 
-			if tc.expectError {
+			if tt.expectError {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)

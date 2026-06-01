@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+
+	"github.com/coding-shenanigans/alchemist-service/internal/constant"
 )
 
 const (
@@ -33,9 +35,9 @@ var (
 	passwordSpecialRegex = regexp.MustCompile(passwordSpecialRegexString)
 
 	allowedWishListVisibilities = map[string]struct{}{
-		"public":       {},
-		"friends_only": {},
-		"private":      {},
+		constant.WishListVisibilityPublic:      {},
+		constant.WishListVisibilityFriendsOnly: {},
+		constant.WishListVisibilityPrivate:     {},
 	}
 )
 
