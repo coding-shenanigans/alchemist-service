@@ -43,11 +43,8 @@ func RegisterEndpoints(
 	protected.POST("/auth/signout", authHandler.signout)
 
 	protected.POST("/users/:username/wish-lists", wishListHandler.createWishList)
-
-	// TODO: Change read operations for wish lists to be hybrid endpoints.
-	protected.GET("/users/:username/wish-lists", wishListHandler.listWishLists)
-	protected.GET("/users/:username/wish-lists/:wishListId", wishListHandler.getWishList)
-
+	hybrid.GET("/users/:username/wish-lists", wishListHandler.listWishLists)
+	hybrid.GET("/users/:username/wish-lists/:wishListId", wishListHandler.getWishList)
 	protected.PATCH("/users/:username/wish-lists/:wishListId", wishListHandler.updateWishList)
 	protected.DELETE("/users/:username/wish-lists/:wishListId", wishListHandler.deleteWishList)
 }

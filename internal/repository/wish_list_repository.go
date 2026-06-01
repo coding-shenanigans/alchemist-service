@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"database/sql"
+	"errors"
 	"net/http"
 
 	"github.com/jmoiron/sqlx"
@@ -54,10 +56,16 @@ func (r *WishListRepository) GetWishListById(
 
 	err := r.db.Get(wishList, query, userId, wishListId)
 	if err != nil {
-		// TODO: log error
-		return nil, exception.NewApiError(
-			http.StatusInternalServerError, "failed to fetch the wish list",
-		)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, exception.NewApiError(
+				http.StatusNotFound, "the wish list was not found",
+			)
+		} else {
+			// TODO: log error
+			return nil, exception.NewApiError(
+				http.StatusInternalServerError, "failed to fetch the wish list",
+			)
+		}
 	}
 
 	return wishList, nil

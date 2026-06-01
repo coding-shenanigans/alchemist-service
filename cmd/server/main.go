@@ -10,6 +10,8 @@ import (
 )
 
 func main() {
+	config.Load()
+
 	router := gin.Default()
 	router.Use(cors.New(config.GetCorsConfig()))
 
