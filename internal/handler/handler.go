@@ -28,11 +28,13 @@ func RegisterEndpoints(
 	// create services
 	authService := service.NewAuthService(userRepository, sessionRepository)
 	wishListService := service.NewWishListService(userRepository, wishListRepository)
+	userService := service.NewUserService(userRepository)
 
 	// create handlers
 	opsHandler := newOpsHandler()
 	authHandler := newAuthHandler(authService)
 	wishListHandler := newWishListHandler(wishListService)
+	userHandler := newUserHandler(userService)
 
 	// register endpoints
 	public.GET("/health", opsHandler.health)
@@ -41,6 +43,8 @@ func RegisterEndpoints(
 	public.POST("/auth/signin", authHandler.signin)
 	public.POST("/auth/refresh", authHandler.refresh)
 	protected.POST("/auth/signout", authHandler.signout)
+
+	hybrid.GET("/users/:username/profile", userHandler.getUserProfile)
 
 	protected.POST("/users/:username/wish-lists", wishListHandler.createWishList)
 	hybrid.GET("/users/:username/wish-lists", wishListHandler.listWishLists)
