@@ -64,7 +64,8 @@ func (s *WishListService) GetWishList(
 		return nil, apiErr
 	}
 
-	// TODO: Check actual friendship when that feature is added.
+	// TODO: Friendships have not been implemented yet. When friendships are
+	// implemented, we need to properly populate this value.
 	isFriend := false
 
 	if !s.hasAccess(authenticatedUserId, wishList, isFriend) {
@@ -84,17 +85,17 @@ func (s *WishListService) ListWishLists(
 		return nil, apiErr
 	}
 
-	if user.Id != authenticatedUserId {
-		return nil, exception.NewApiError(
-			http.StatusForbidden,
-			"you do not have permission to modify this user's data",
-		)
-	}
-
 	wishLists, apiErr := s.wishListRepository.ListWishLists(user.Id)
 	if apiErr != nil {
 		return nil, apiErr
 	}
+
+	// TODO: Friendships have not been implemented yet. When friendships are
+	// implemented, we need to properly populate this value.
+	isFriend := false
+	wishLists = s.filterAccessibleWishLists(
+		authenticatedUserId, wishLists, isFriend,
+	)
 
 	return wishLists, nil
 }
@@ -179,4 +180,19 @@ func (s *WishListService) hasAccess(
 	}
 
 	return wishList.UserId == authenticatedUserId
+}
+
+// Returns the wish lists the authenticated user has access to.
+func (s *WishListService) filterAccessibleWishLists(
+	authenticatedUserId int, wishLists []*model.WishList, isFriend bool,
+) []*model.WishList {
+	accessibleWishLists := make([]*model.WishList, 0, len(wishLists))
+
+	for _, wishList := range wishLists {
+		if s.hasAccess(authenticatedUserId, wishList, isFriend) {
+			accessibleWishLists = append(accessibleWishLists, wishList)
+		}
+	}
+
+	return accessibleWishLists
 }
