@@ -80,6 +80,7 @@ func (r *WishListRepository) ListWishLists(
 		SELECT *
 		FROM wish_lists
 		WHERE user_id = $1
+		ORDER BY updated_at DESC
 	`
 
 	err := r.db.Select(&wishLists, query, userId)
