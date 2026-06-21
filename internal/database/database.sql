@@ -93,3 +93,33 @@ CREATE OR REPLACE TRIGGER wish_lists_update_timestamp
 BEFORE UPDATE ON wish_lists
 FOR EACH ROW
 EXECUTE FUNCTION update_timestamp();
+
+-------------------------------
+-- Set up the `items` table. --
+-------------------------------
+
+-- Create the `items` table.
+CREATE TABLE IF NOT EXISTS items (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  wish_list_id BIGINT NOT NULL,
+  url TEXT NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  price NUMERIC(12, 2) NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  -- Add a foreign key reference to the `wish_lists.id` column.
+  CONSTRAINT items_wish_lists_id_fkey
+    FOREIGN KEY(wish_list_id) 
+    REFERENCES wish_lists(id) 
+    ON DELETE CASCADE
+);
+
+-- Create an index for the `items.wish_list_id` column.
+CREATE INDEX IF NOT EXISTS idx_items_wish_lists_id ON items(wish_list_id);
+
+-- Apply the `update_timestamp` trigger to the `items` table.
+CREATE OR REPLACE TRIGGER items_update_timestamp
+BEFORE UPDATE ON items
+FOR EACH ROW
+EXECUTE FUNCTION update_timestamp();
