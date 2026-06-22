@@ -24,17 +24,22 @@ func RegisterEndpoints(
 	userRepository := repository.NewUserRepository(db)
 	sessionRepository := repository.NewSessionRepository(db)
 	wishListRepository := repository.NewWishListRepository(db)
+	itemRepository := repository.NewItemRepository(db)
 
 	// create services
 	authService := service.NewAuthService(userRepository, sessionRepository)
 	wishListService := service.NewWishListService(userRepository, wishListRepository)
 	userService := service.NewUserService(userRepository)
+	itemService := service.NewItemService(
+		userRepository, wishListRepository, itemRepository,
+	)
 
 	// create handlers
 	opsHandler := newOpsHandler()
 	authHandler := newAuthHandler(authService)
 	wishListHandler := newWishListHandler(wishListService)
 	userHandler := newUserHandler(userService)
+	itemHandler := newItemHandler(itemService)
 
 	// register endpoints
 	public.GET("/health", opsHandler.health)
@@ -51,4 +56,6 @@ func RegisterEndpoints(
 	hybrid.GET("/users/:username/wish-lists/:wishListId", wishListHandler.getWishList)
 	protected.PATCH("/users/:username/wish-lists/:wishListId", wishListHandler.updateWishList)
 	protected.DELETE("/users/:username/wish-lists/:wishListId", wishListHandler.deleteWishList)
+
+	protected.POST("/users/:username/wish-lists/:wishListId/items", itemHandler.createItem)
 }
