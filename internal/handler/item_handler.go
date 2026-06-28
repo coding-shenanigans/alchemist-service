@@ -62,6 +62,7 @@ func (h *itemHandler) createItem(c *gin.Context) {
 }
 
 func (h *itemHandler) getItem(c *gin.Context) {
+	authenticatedUserId := c.GetInt(constant.AuthenticatedUserId)
 	username := c.Param("username")
 
 	wishListId, err := strconv.Atoi(c.Param("wishListId"))
@@ -78,7 +79,9 @@ func (h *itemHandler) getItem(c *gin.Context) {
 		return
 	}
 
-	item, apiErr := h.itemService.GetItem(username, wishListId, itemId)
+	item, apiErr := h.itemService.GetItem(
+		authenticatedUserId, username, wishListId, itemId,
+	)
 	if apiErr != nil {
 		c.JSON(apiErr.Status(), dto.NewErrorResponseFromApiError(apiErr))
 		return

@@ -68,7 +68,7 @@ func (s *WishListService) GetWishList(
 	// implemented, we need to properly populate this value.
 	isFriend := false
 
-	if !s.hasAccess(authenticatedUserId, wishList, isFriend) {
+	if !hasAccessToWishList(authenticatedUserId, wishList, isFriend) {
 		return nil, exception.NewApiError(
 			http.StatusNotFound, "the wish list was not found",
 		)
@@ -168,7 +168,7 @@ func (s *WishListService) DeleteWishList(
 }
 
 // Checks if a user has access to a wish list.
-func (s *WishListService) hasAccess(
+func hasAccessToWishList(
 	authenticatedUserId int, wishList *model.WishList, isFriend bool,
 ) bool {
 	if wishList.Visibility == constant.WishListVisibilityPublic {
@@ -189,7 +189,7 @@ func (s *WishListService) filterAccessibleWishLists(
 	accessibleWishLists := make([]*model.WishList, 0, len(wishLists))
 
 	for _, wishList := range wishLists {
-		if s.hasAccess(authenticatedUserId, wishList, isFriend) {
+		if hasAccessToWishList(authenticatedUserId, wishList, isFriend) {
 			accessibleWishLists = append(accessibleWishLists, wishList)
 		}
 	}

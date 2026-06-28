@@ -10,8 +10,6 @@ import (
 )
 
 func TestHasAccess(t *testing.T) {
-	s := &WishListService{}
-
 	tests := []struct {
 		name                string
 		authenticatedUserId int
@@ -123,7 +121,9 @@ func TestHasAccess(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actual := s.hasAccess(tt.authenticatedUserId, tt.wishList, tt.isFriend)
+			actual := hasAccessToWishList(
+				tt.authenticatedUserId, tt.wishList, tt.isFriend,
+			)
 			assert.Equal(t, tt.expected, actual)
 		})
 	}
