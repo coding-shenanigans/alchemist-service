@@ -25,6 +25,11 @@ const (
 
 	wishListNameMinLength = 1
 	wishListNameMaxLength = 100
+
+	urlMinLength      = 1
+	urlMaxLength      = 2048
+	itemNameMinLength = 1
+	itemNameMaxLength = 100
 )
 
 var (
@@ -153,4 +158,38 @@ func ValidateWishListVisibility(visibility string) error {
 		visibility,
 		allowedValues,
 	)
+}
+
+// Checks if the url is valid.
+func ValidateUrl(url string) error {
+	if len(url) < urlMinLength {
+		return fmt.Errorf(
+			"the url should have at least %d characters", urlMinLength,
+		)
+	}
+
+	if len(url) > urlMaxLength {
+		return fmt.Errorf(
+			"the url should not exceed %d characters", urlMaxLength,
+		)
+	}
+
+	return nil
+}
+
+// Checks if the wish list name is valid.
+func ValidateItemName(item string) error {
+	if len(item) < itemNameMinLength {
+		return fmt.Errorf(
+			"the item name should have at least %d characters", itemNameMinLength,
+		)
+	}
+
+	if len(item) > itemNameMaxLength {
+		return fmt.Errorf(
+			"the wish list name should not exceed %d characters", itemNameMaxLength,
+		)
+	}
+
+	return nil
 }

@@ -230,3 +230,75 @@ func TestValidateWishListVisibility(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateUrl(t *testing.T) {
+	tests := []struct {
+		name        string
+		url         string
+		expectError bool
+	}{
+		{
+			name:        "blank",
+			url:         "",
+			expectError: true,
+		},
+		{
+			name:        "exceed_max_length",
+			url:         strings.Repeat("a", 2049),
+			expectError: true,
+		},
+		{
+			name:        "valid",
+			url:         "example.com",
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateUrl(tt.url)
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestValidateItemName(t *testing.T) {
+	tests := []struct {
+		name        string
+		itemName    string
+		expectError bool
+	}{
+		{
+			name:        "blank",
+			itemName:    "",
+			expectError: true,
+		},
+		{
+			name:        "exceed_max_length",
+			itemName:    strings.Repeat("a", 101),
+			expectError: true,
+		},
+		{
+			name:        "valid",
+			itemName:    "my item name",
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateItemName(tt.itemName)
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
