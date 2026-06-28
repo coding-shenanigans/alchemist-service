@@ -55,3 +55,24 @@ func (s *ItemService) CreateItem(
 
 	return newItem, nil
 }
+
+func (s *ItemService) GetItem(
+	username string, wishListId int, itemId int,
+) (*model.Item, *exception.ApiError) {
+	user, apiErr := s.userRepository.GetUserByUsername(username)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	_, apiErr = s.wishListRepository.GetWishListById(user.Id, wishListId)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	item, apiErr := s.itemRepository.GetItemById(wishListId, itemId)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	return item, nil
+}

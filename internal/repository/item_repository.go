@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"database/sql"
+	"errors"
 	"net/http"
 
 	"github.com/jmoiron/sqlx"
@@ -39,4 +41,32 @@ func (r *ItemRepository) CreateItem(
 	}
 
 	return newItem, nil
+}
+
+// Gets an item by its id.
+func (r *ItemRepository) GetItemById(
+	wishListId int, itemId int,
+) (*model.Item, *exception.ApiError) {
+	item := new(model.Item)
+	query := `
+		SELECT *
+		FROM items
+		WHERE wish_list_id = $1 AND id = $2
+	`
+
+	err := r.db.Get(item, query, wishListId, itemId)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, exception.NewApiError(
+				http.StatusNotFound, "the item was not found",
+			)
+		} else {
+			// TODO: log error
+			return nil, exception.NewApiError(
+				http.StatusInternalServerError, "failed to fetch the item",
+			)
+		}
+	}
+
+	return item, nil
 }
