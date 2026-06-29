@@ -58,5 +58,6 @@ func RegisterEndpoints(
 	protected.DELETE("/users/:username/wish-lists/:wishListId", wishListHandler.deleteWishList)
 
 	protected.POST("/users/:username/wish-lists/:wishListId/items", itemHandler.createItem)
+	hybrid.GET("/users/:username/wish-lists/:wishListId/items", itemHandler.listItems)
 	hybrid.GET("/users/:username/wish-lists/:wishListId/items/:itemId", itemHandler.getItem)
 }

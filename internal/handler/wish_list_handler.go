@@ -87,7 +87,7 @@ func (h *wishListHandler) listWishLists(c *gin.Context) {
 		return
 	}
 
-	res := &dto.ListWishListResponse{WishLists: wishLists}
+	res := &dto.ListWishListsResponse{WishLists: wishLists}
 	c.JSON(http.StatusOK, res)
 }
 

@@ -70,3 +70,26 @@ func (r *ItemRepository) GetItemById(
 
 	return item, nil
 }
+
+// Gets all the items.
+func (r *ItemRepository) ListItems(
+	wishListId int,
+) ([]*model.Item, *exception.ApiError) {
+	items := []*model.Item{}
+	query := `
+		SELECT *
+		FROM items
+		WHERE wish_list_id = $1
+		ORDER BY updated_at DESC
+	`
+
+	err := r.db.Select(&items, query, wishListId)
+	if err != nil {
+		// TODO: log error
+		return nil, exception.NewApiError(
+			http.StatusInternalServerError, "failed to fetch the items",
+		)
+	}
+
+	return items, nil
+}
