@@ -93,3 +93,23 @@ func (r *ItemRepository) ListItems(
 
 	return items, nil
 }
+
+// Deletes an item by its id.
+func (r *ItemRepository) DeleteItemById(
+	wishListId int, itemId int,
+) *exception.ApiError {
+	query := `
+		DELETE FROM items
+		WHERE wish_list_id = $1 AND id = $2;
+	`
+
+	_, err := r.db.Exec(query, wishListId, itemId)
+	if err != nil {
+		// TODO: log error
+		return exception.NewApiError(
+			http.StatusInternalServerError, "failed to delete the item",
+		)
+	}
+
+	return nil
+}

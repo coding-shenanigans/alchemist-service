@@ -113,3 +113,32 @@ func (h *itemHandler) listItems(c *gin.Context) {
 	res := &dto.ListItemsResponse{Items: items}
 	c.JSON(http.StatusOK, res)
 }
+
+func (h *itemHandler) deleteItem(c *gin.Context) {
+	authenticatedUserId := c.GetInt(constant.AuthenticatedUserId)
+	username := c.Param("username")
+
+	wishListId, err := strconv.Atoi(c.Param("wishListId"))
+	if err != nil {
+		status := http.StatusBadRequest
+		c.JSON(status, dto.NewErrorResponse(status, "invalid wish list id"))
+		return
+	}
+
+	itemId, err := strconv.Atoi(c.Param("itemId"))
+	if err != nil {
+		status := http.StatusBadRequest
+		c.JSON(status, dto.NewErrorResponse(status, "invalid item id"))
+		return
+	}
+
+	apiErr := h.itemService.DeleteItem(
+		authenticatedUserId, username, wishListId, itemId,
+	)
+	if apiErr != nil {
+		c.JSON(apiErr.Status(), dto.NewErrorResponseFromApiError(apiErr))
+		return
+	}
+
+	c.JSON(http.StatusNoContent, nil)
+}
