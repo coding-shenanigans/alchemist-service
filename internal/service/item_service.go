@@ -118,6 +118,59 @@ func (s *ItemService) ListItems(
 	return items, nil
 }
 
+func (s *ItemService) UpdateItem(
+	authenticatedUserId int,
+	username string,
+	wishListId int,
+	itemId int,
+	url *string,
+	name *string,
+	price *float64,
+) (*model.Item, *exception.ApiError) {
+	user, apiErr := s.userRepository.GetUserByUsername(username)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	if user.Id != authenticatedUserId {
+		return nil, exception.NewApiError(
+			http.StatusForbidden,
+			"you do not have permission to modify this user's data",
+		)
+	}
+
+	_, apiErr = s.wishListRepository.GetWishListById(
+		user.Id, wishListId,
+	)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	item, apiErr := s.itemRepository.GetItemById(wishListId, itemId)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	if url != nil {
+		item.Url = *url
+	}
+
+	if name != nil {
+		item.Name = *name
+	}
+
+	if price != nil {
+		item.Price = *price
+	}
+
+	item, apiErr = s.itemRepository.UpdateItem(item)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	return item, nil
+}
+
 func (s *ItemService) DeleteItem(
 	authenticatedUserId int, username string, wishListId int, itemId int,
 ) *exception.ApiError {

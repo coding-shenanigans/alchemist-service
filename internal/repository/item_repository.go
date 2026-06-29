@@ -94,6 +94,40 @@ func (r *ItemRepository) ListItems(
 	return items, nil
 }
 
+// Updates an item.
+func (r *ItemRepository) UpdateItem(
+	item *model.Item,
+) (*model.Item, *exception.ApiError) {
+	updatedItem := new(model.Item)
+	query := `
+		UPDATE items
+		SET 
+			url = $1,
+			name = $2,
+			price = $3
+		WHERE wish_list_id = $4 AND id = $5
+		RETURNING *;
+	`
+
+	err := r.db.Get(
+		updatedItem,
+		query,
+		item.Url,
+		item.Name,
+		item.Price,
+		item.WishListId,
+		item.Id,
+	)
+	if err != nil {
+		// TODO: log error
+		return nil, exception.NewApiError(
+			http.StatusInternalServerError, "failed to update the item",
+		)
+	}
+
+	return updatedItem, nil
+}
+
 // Deletes an item by its id.
 func (r *ItemRepository) DeleteItemById(
 	wishListId int, itemId int,
