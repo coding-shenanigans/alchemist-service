@@ -114,6 +114,56 @@ func (h *itemHandler) listItems(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+func (h *itemHandler) updateItem(c *gin.Context) {
+	req := new(dto.UpdateItemRequest)
+
+	if err := c.ShouldBindJSON(req); err != nil {
+		status := http.StatusBadRequest
+		c.JSON(status, dto.NewErrorResponse(status, err.Error()))
+		return
+	}
+
+	if err := req.Validate(); err != nil {
+		status := http.StatusBadRequest
+		c.JSON(status, dto.NewErrorResponse(status, err.Error()))
+		return
+	}
+
+	authenticatedUserId := c.GetInt(constant.AuthenticatedUserId)
+	username := c.Param("username")
+
+	wishListId, err := strconv.Atoi(c.Param("wishListId"))
+	if err != nil {
+		status := http.StatusBadRequest
+		c.JSON(status, dto.NewErrorResponse(status, "invalid wish list id"))
+		return
+	}
+
+	itemId, err := strconv.Atoi(c.Param("itemId"))
+	if err != nil {
+		status := http.StatusBadRequest
+		c.JSON(status, dto.NewErrorResponse(status, "invalid item id"))
+		return
+	}
+
+	item, apiErr := h.itemService.UpdateItem(
+		authenticatedUserId,
+		username,
+		wishListId,
+		itemId,
+		req.Url,
+		req.Name,
+		req.Price,
+	)
+	if apiErr != nil {
+		c.JSON(apiErr.Status(), dto.NewErrorResponseFromApiError(apiErr))
+		return
+	}
+
+	res := &dto.UpdateItemResponse{Item: item}
+	c.JSON(http.StatusOK, res)
+}
+
 func (h *itemHandler) deleteItem(c *gin.Context) {
 	authenticatedUserId := c.GetInt(constant.AuthenticatedUserId)
 	username := c.Param("username")
