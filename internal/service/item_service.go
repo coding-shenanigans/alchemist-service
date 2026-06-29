@@ -117,3 +117,31 @@ func (s *ItemService) ListItems(
 
 	return items, nil
 }
+
+func (s *ItemService) DeleteItem(
+	authenticatedUserId int, username string, wishListId int, itemId int,
+) *exception.ApiError {
+	user, apiErr := s.userRepository.GetUserByUsername(username)
+	if apiErr != nil {
+		return apiErr
+	}
+
+	if user.Id != authenticatedUserId {
+		return exception.NewApiError(
+			http.StatusForbidden,
+			"you do not have permission to modify this user's data",
+		)
+	}
+
+	_, apiErr = s.wishListRepository.GetWishListById(user.Id, wishListId)
+	if apiErr != nil {
+		return apiErr
+	}
+
+	apiErr = s.itemRepository.DeleteItemById(wishListId, itemId)
+	if apiErr != nil {
+		return apiErr
+	}
+
+	return nil
+}
