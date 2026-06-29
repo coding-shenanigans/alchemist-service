@@ -2,6 +2,6 @@ package dto
 
 import "github.com/coding-shenanigans/alchemist-service/internal/model"
 
-type ListWishListResponse struct {
+type ListWishListsResponse struct {
 	WishLists []*model.WishList `json:"wishLists"`
 }

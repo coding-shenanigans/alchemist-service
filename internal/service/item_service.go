@@ -86,3 +86,34 @@ func (s *ItemService) GetItem(
 
 	return item, nil
 }
+
+func (s *ItemService) ListItems(
+	authenticatedUserId int, username string, wishListId int,
+) ([]*model.Item, *exception.ApiError) {
+	user, apiErr := s.userRepository.GetUserByUsername(username)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	wishList, apiErr := s.wishListRepository.GetWishListById(user.Id, wishListId)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	// TODO: Friendships have not been implemented yet. When friendships are
+	// implemented, we need to properly populate this value.
+	isFriend := false
+
+	if !hasAccessToWishList(authenticatedUserId, wishList, isFriend) {
+		return nil, exception.NewApiError(
+			http.StatusNotFound, "the wish list was not found",
+		)
+	}
+
+	items, apiErr := s.itemRepository.ListItems(wishListId)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	return items, nil
+}

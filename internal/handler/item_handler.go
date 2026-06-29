@@ -90,3 +90,26 @@ func (h *itemHandler) getItem(c *gin.Context) {
 	res := &dto.GetItemResponse{Item: item}
 	c.JSON(http.StatusOK, res)
 }
+
+func (h *itemHandler) listItems(c *gin.Context) {
+	authenticatedUserId := c.GetInt(constant.AuthenticatedUserId)
+	username := c.Param("username")
+
+	wishListId, err := strconv.Atoi(c.Param("wishListId"))
+	if err != nil {
+		status := http.StatusBadRequest
+		c.JSON(status, dto.NewErrorResponse(status, "invalid wish list id"))
+		return
+	}
+
+	items, apiErr := h.itemService.ListItems(
+		authenticatedUserId, username, wishListId,
+	)
+	if apiErr != nil {
+		c.JSON(apiErr.Status(), dto.NewErrorResponseFromApiError(apiErr))
+		return
+	}
+
+	res := &dto.ListItemsResponse{Items: items}
+	c.JSON(http.StatusOK, res)
+}
