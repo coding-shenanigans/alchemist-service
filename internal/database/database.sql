@@ -98,6 +98,11 @@ EXECUTE FUNCTION update_timestamp();
 -- Set up the `items` table. --
 -------------------------------
 
+-- Create an enum type for the `items.status` column.
+CREATE TYPE items_status_type AS ENUM (
+  'available', 'reserved', 'received'
+);
+
 -- Create the `items` table.
 CREATE TABLE IF NOT EXISTS items (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -105,6 +110,8 @@ CREATE TABLE IF NOT EXISTS items (
   url TEXT NOT NULL,
   name VARCHAR(255) NOT NULL,
   price NUMERIC(12, 2) NOT NULL,
+  status items_status_type NOT NULL DEFAULT 'available',
+  reserved_by_user_id BIGINT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
@@ -113,6 +120,12 @@ CREATE TABLE IF NOT EXISTS items (
     FOREIGN KEY(wish_list_id) 
     REFERENCES wish_lists(id) 
     ON DELETE CASCADE
+  
+  -- Add a foreign key reference to the `users.id` column.
+  CONSTRAINT items_reserved_by_user_id_fkey
+    FOREIGN KEY(reserved_by_user_id) 
+    REFERENCES users(id)
+    ON DELETE SET NULL
 );
 
 -- Create an index for the `items.wish_list_id` column.
