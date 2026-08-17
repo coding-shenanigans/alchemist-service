@@ -104,8 +104,10 @@ func (r *ItemRepository) UpdateItem(
 		SET 
 			url = $1,
 			name = $2,
-			price = $3
-		WHERE wish_list_id = $4 AND id = $5
+			price = $3,
+			status = $4,
+			reserved_by_user_id = $5
+		WHERE wish_list_id = $6 AND id = $7
 		RETURNING *;
 	`
 
@@ -115,6 +117,8 @@ func (r *ItemRepository) UpdateItem(
 		item.Url,
 		item.Name,
 		item.Price,
+		item.Status,
+		item.ReservedByUserId,
 		item.WishListId,
 		item.Id,
 	)

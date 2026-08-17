@@ -44,6 +44,12 @@ var (
 		constant.WishListVisibilityFriendsOnly: {},
 		constant.WishListVisibilityPrivate:     {},
 	}
+
+	allowedItemStatuses = map[string]struct{}{
+		constant.ItemStatusAvailable: {},
+		constant.ItemStatusReserved:  {},
+		constant.ItemStatusReceived:  {},
+	}
 )
 
 // Checks if the email is valid.
@@ -192,4 +198,21 @@ func ValidateItemName(item string) error {
 	}
 
 	return nil
+}
+
+// Checks if the item status is valid.
+func ValidateItemStatus(status string) error {
+	if _, exists := allowedItemStatuses[status]; exists {
+		return nil
+	}
+
+	keys := slices.Collect(maps.Keys(allowedItemStatuses))
+	slices.Sort(keys)
+	allowedValues := strings.Join(keys, ", ")
+
+	return fmt.Errorf(
+		"the item status %q is not allowed. Allowed values: [%s]",
+		status,
+		allowedValues,
+	)
 }

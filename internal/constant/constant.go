@@ -9,4 +9,8 @@ const (
 	WishListVisibilityPublic      = "public"
 	WishListVisibilityFriendsOnly = "friends_only"
 	WishListVisibilityPrivate     = "private"
+
+	ItemStatusAvailable = "available"
+	ItemStatusReserved  = "reserved"
+	ItemStatusReceived  = "received"
 )
