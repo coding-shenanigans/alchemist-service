@@ -302,3 +302,39 @@ func TestValidateItemName(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateItemStatus(t *testing.T) {
+	tests := []struct {
+		name        string
+		status      string
+		expectError bool
+	}{
+		{
+			name:        "blank",
+			status:      "",
+			expectError: true,
+		},
+		{
+			name:        "invalid_status",
+			status:      "unknown",
+			expectError: true,
+		},
+		{
+			name:        "valid",
+			status:      "available",
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateItemStatus(tt.status)
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}

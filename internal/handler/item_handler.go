@@ -154,6 +154,8 @@ func (h *itemHandler) updateItem(c *gin.Context) {
 		req.Url,
 		req.Name,
 		req.Price,
+		req.Status,
+		req.ReservedByUserId,
 	)
 	if apiErr != nil {
 		c.JSON(apiErr.Status(), dto.NewErrorResponseFromApiError(apiErr))

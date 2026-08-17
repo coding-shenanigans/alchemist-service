@@ -3,6 +3,7 @@ package service
 import (
 	"net/http"
 
+	"github.com/coding-shenanigans/alchemist-service/internal/dto"
 	"github.com/coding-shenanigans/alchemist-service/internal/exception"
 	"github.com/coding-shenanigans/alchemist-service/internal/model"
 	"github.com/coding-shenanigans/alchemist-service/internal/repository"
@@ -126,6 +127,8 @@ func (s *ItemService) UpdateItem(
 	url *string,
 	name *string,
 	price *float64,
+	status *string,
+	reservedByUserId dto.NullableField[int],
 ) (*model.Item, *exception.ApiError) {
 	user, apiErr := s.userRepository.GetUserByUsername(username)
 	if apiErr != nil {
@@ -161,6 +164,14 @@ func (s *ItemService) UpdateItem(
 
 	if price != nil {
 		item.Price = *price
+	}
+
+	if status != nil {
+		item.Status = *status
+	}
+
+	if reservedByUserId.IsSet {
+		item.ReservedByUserId = reservedByUserId.Value
 	}
 
 	item, apiErr = s.itemRepository.UpdateItem(item)
