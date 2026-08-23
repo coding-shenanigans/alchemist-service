@@ -46,12 +46,16 @@ func (r *ItemRepository) CreateItem(
 // Gets an item by its id.
 func (r *ItemRepository) GetItemById(
 	wishListId int, itemId int,
-) (*model.Item, *exception.ApiError) {
-	item := new(model.Item)
+) (*model.ItemWithUser, *exception.ApiError) {
+	item := new(model.ItemWithUser)
 	query := `
-		SELECT *
-		FROM items
-		WHERE wish_list_id = $1 AND id = $2
+		SELECT
+			i.*,
+			u.username AS reserved_by_username
+		FROM items AS i
+		LEFT JOIN users AS u
+			ON i.reserved_by_user_id = u.id
+		WHERE i.wish_list_id = $1 AND i.id = $2
 	`
 
 	err := r.db.Get(item, query, wishListId, itemId)
@@ -74,11 +78,15 @@ func (r *ItemRepository) GetItemById(
 // Gets all the items.
 func (r *ItemRepository) ListItems(
 	wishListId int,
-) ([]*model.Item, *exception.ApiError) {
-	items := []*model.Item{}
+) ([]*model.ItemWithUser, *exception.ApiError) {
+	items := []*model.ItemWithUser{}
 	query := `
-		SELECT *
-		FROM items
+		SELECT
+			i.*,
+			u.username AS reserved_by_username
+		FROM items AS i
+		LEFT JOIN users AS u
+			ON i.reserved_by_user_id = u.id
 		WHERE wish_list_id = $1
 		ORDER BY updated_at DESC
 	`
