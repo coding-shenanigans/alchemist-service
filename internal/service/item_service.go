@@ -59,7 +59,7 @@ func (s *ItemService) CreateItem(
 
 func (s *ItemService) GetItem(
 	authenticatedUserId int, username string, wishListId int, itemId int,
-) (*model.Item, *exception.ApiError) {
+) (*model.ItemWithUser, *exception.ApiError) {
 	user, apiErr := s.userRepository.GetUserByUsername(username)
 	if apiErr != nil {
 		return nil, apiErr
@@ -90,7 +90,7 @@ func (s *ItemService) GetItem(
 
 func (s *ItemService) ListItems(
 	authenticatedUserId int, username string, wishListId int,
-) ([]*model.Item, *exception.ApiError) {
+) ([]*model.ItemWithUser, *exception.ApiError) {
 	user, apiErr := s.userRepository.GetUserByUsername(username)
 	if apiErr != nil {
 		return nil, apiErr
@@ -149,32 +149,32 @@ func (s *ItemService) UpdateItem(
 		return nil, apiErr
 	}
 
-	item, apiErr := s.itemRepository.GetItemById(wishListId, itemId)
+	itemWithUser, apiErr := s.itemRepository.GetItemById(wishListId, itemId)
 	if apiErr != nil {
 		return nil, apiErr
 	}
 
 	if url != nil {
-		item.Url = *url
+		itemWithUser.Item.Url = *url
 	}
 
 	if name != nil {
-		item.Name = *name
+		itemWithUser.Item.Name = *name
 	}
 
 	if price != nil {
-		item.Price = *price
+		itemWithUser.Item.Price = *price
 	}
 
 	if status != nil {
-		item.Status = *status
+		itemWithUser.Item.Status = *status
 	}
 
 	if reservedByUserId.IsSet {
-		item.ReservedByUserId = reservedByUserId.Value
+		itemWithUser.Item.ReservedByUserId = reservedByUserId.Value
 	}
 
-	item, apiErr = s.itemRepository.UpdateItem(item)
+	item, apiErr := s.itemRepository.UpdateItem(&itemWithUser.Item)
 	if apiErr != nil {
 		return nil, apiErr
 	}
