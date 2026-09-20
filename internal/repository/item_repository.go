@@ -7,6 +7,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
+	"github.com/coding-shenanigans/alchemist-service/internal/constant"
 	"github.com/coding-shenanigans/alchemist-service/internal/exception"
 	"github.com/coding-shenanigans/alchemist-service/internal/model"
 )
@@ -158,4 +159,61 @@ func (r *ItemRepository) DeleteItemById(
 	}
 
 	return nil
+}
+
+// Reserves an item.
+func (r *ItemRepository) ReserveItem(
+	wishListId int, itemId int, reservedByUserId int,
+) (*model.ItemWithUser, *exception.ApiError) {
+	query := `
+		UPDATE items
+		SET 
+			status = $1,
+			reserved_by_user_id = $2
+		WHERE wish_list_id = $3 AND id = $4;
+	`
+
+	_, err := r.db.Exec(
+		query,
+		constant.ItemStatusReserved,
+		reservedByUserId,
+		wishListId,
+		itemId,
+	)
+	if err != nil {
+		// TODO: log error
+		return nil, exception.NewApiError(
+			http.StatusInternalServerError, "failed to reserve the item",
+		)
+	}
+
+	return r.GetItemById(wishListId, itemId)
+}
+
+// Reserves an item.
+func (r *ItemRepository) CancelItemReservation(
+	wishListId int, itemId int,
+) (*model.ItemWithUser, *exception.ApiError) {
+	query := `
+		UPDATE items
+		SET 
+			status = $1,
+			reserved_by_user_id = NULL
+		WHERE wish_list_id = $2 AND id = $3;
+	`
+
+	_, err := r.db.Exec(
+		query,
+		constant.ItemStatusAvailable,
+		wishListId,
+		itemId,
+	)
+	if err != nil {
+		// TODO: log error
+		return nil, exception.NewApiError(
+			http.StatusInternalServerError, "failed to reserve the item",
+		)
+	}
+
+	return r.GetItemById(wishListId, itemId)
 }

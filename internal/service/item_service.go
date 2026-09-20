@@ -3,6 +3,7 @@ package service
 import (
 	"net/http"
 
+	"github.com/coding-shenanigans/alchemist-service/internal/constant"
 	"github.com/coding-shenanigans/alchemist-service/internal/dto"
 	"github.com/coding-shenanigans/alchemist-service/internal/exception"
 	"github.com/coding-shenanigans/alchemist-service/internal/model"
@@ -208,4 +209,94 @@ func (s *ItemService) DeleteItem(
 	}
 
 	return nil
+}
+
+func (s *ItemService) ReserveItem(
+	authenticatedUserId int, username string, wishListId int, itemId int,
+) (*model.ItemWithUser, *exception.ApiError) {
+	user, apiErr := s.userRepository.GetUserByUsername(username)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	wishList, apiErr := s.wishListRepository.GetWishListById(user.Id, wishListId)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	// TODO: Friendships have not been implemented yet. When friendships are
+	// implemented, we need to properly populate this value.
+	isFriend := false
+
+	if !hasAccessToWishList(authenticatedUserId, wishList, isFriend) {
+		return nil, exception.NewApiError(
+			http.StatusNotFound, "the wish list was not found",
+		)
+	}
+
+	item, apiErr := s.itemRepository.GetItemById(wishListId, itemId)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	if item.Status != constant.ItemStatusAvailable ||
+		item.ReservedByUserId != nil {
+		return nil, exception.NewApiError(
+			http.StatusConflict, "the item is not available",
+		)
+	}
+
+	item, apiErr = s.itemRepository.ReserveItem(
+		wishListId, itemId, authenticatedUserId,
+	)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	return item, nil
+}
+
+func (s *ItemService) CancelItemReservation(
+	authenticatedUserId int, username string, wishListId int, itemId int,
+) (*model.ItemWithUser, *exception.ApiError) {
+	user, apiErr := s.userRepository.GetUserByUsername(username)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	wishList, apiErr := s.wishListRepository.GetWishListById(user.Id, wishListId)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	// TODO: Friendships have not been implemented yet. When friendships are
+	// implemented, we need to properly populate this value.
+	isFriend := false
+
+	if !hasAccessToWishList(authenticatedUserId, wishList, isFriend) {
+		return nil, exception.NewApiError(
+			http.StatusNotFound, "the wish list was not found",
+		)
+	}
+
+	item, apiErr := s.itemRepository.GetItemById(wishListId, itemId)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	if item.Status != constant.ItemStatusReserved ||
+		*item.ReservedByUserId != authenticatedUserId {
+		return nil, exception.NewApiError(
+			http.StatusConflict, "you are not currently reserving this item",
+		)
+	}
+
+	item, apiErr = s.itemRepository.CancelItemReservation(
+		wishListId, itemId,
+	)
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
+	return item, nil
 }
