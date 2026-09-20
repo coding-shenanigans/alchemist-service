@@ -194,3 +194,63 @@ func (h *itemHandler) deleteItem(c *gin.Context) {
 
 	c.JSON(http.StatusNoContent, nil)
 }
+
+func (h *itemHandler) reserveItem(c *gin.Context) {
+	authenticatedUserId := c.GetInt(constant.AuthenticatedUserId)
+	username := c.Param("username")
+
+	wishListId, err := strconv.Atoi(c.Param("wishListId"))
+	if err != nil {
+		status := http.StatusBadRequest
+		c.JSON(status, dto.NewErrorResponse(status, "invalid wish list id"))
+		return
+	}
+
+	itemId, err := strconv.Atoi(c.Param("itemId"))
+	if err != nil {
+		status := http.StatusBadRequest
+		c.JSON(status, dto.NewErrorResponse(status, "invalid item id"))
+		return
+	}
+
+	item, apiErr := h.itemService.ReserveItem(
+		authenticatedUserId, username, wishListId, itemId,
+	)
+	if apiErr != nil {
+		c.JSON(apiErr.Status(), dto.NewErrorResponseFromApiError(apiErr))
+		return
+	}
+
+	res := &dto.ReserveItemResponse{Item: item}
+	c.JSON(http.StatusOK, res)
+}
+
+func (h *itemHandler) cancelItemReservation(c *gin.Context) {
+	authenticatedUserId := c.GetInt(constant.AuthenticatedUserId)
+	username := c.Param("username")
+
+	wishListId, err := strconv.Atoi(c.Param("wishListId"))
+	if err != nil {
+		status := http.StatusBadRequest
+		c.JSON(status, dto.NewErrorResponse(status, "invalid wish list id"))
+		return
+	}
+
+	itemId, err := strconv.Atoi(c.Param("itemId"))
+	if err != nil {
+		status := http.StatusBadRequest
+		c.JSON(status, dto.NewErrorResponse(status, "invalid item id"))
+		return
+	}
+
+	item, apiErr := h.itemService.CancelItemReservation(
+		authenticatedUserId, username, wishListId, itemId,
+	)
+	if apiErr != nil {
+		c.JSON(apiErr.Status(), dto.NewErrorResponseFromApiError(apiErr))
+		return
+	}
+
+	res := &dto.CancelItemReservationResponse{Item: item}
+	c.JSON(http.StatusOK, res)
+}

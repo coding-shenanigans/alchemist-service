@@ -1,0 +1,7 @@
+package dto
+
+import "github.com/coding-shenanigans/alchemist-service/internal/model"
+
+type ReserveItemResponse struct {
+	Item *model.ItemWithUser `json:"item"`
+}
