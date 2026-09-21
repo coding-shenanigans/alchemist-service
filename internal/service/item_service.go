@@ -30,7 +30,7 @@ func NewItemService(
 
 func (s *ItemService) CreateItem(
 	authenticatedUserId int, username string, item *model.Item,
-) (*model.Item, *exception.ApiError) {
+) (*model.ItemWithUser, *exception.ApiError) {
 	user, apiErr := s.userRepository.GetUserByUsername(username)
 	if apiErr != nil {
 		return nil, apiErr
@@ -130,7 +130,7 @@ func (s *ItemService) UpdateItem(
 	price *float64,
 	status *string,
 	reservedByUserId dto.NullableField[int],
-) (*model.Item, *exception.ApiError) {
+) (*model.ItemWithUser, *exception.ApiError) {
 	user, apiErr := s.userRepository.GetUserByUsername(username)
 	if apiErr != nil {
 		return nil, apiErr

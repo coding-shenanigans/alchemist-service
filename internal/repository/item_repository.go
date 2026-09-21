@@ -23,7 +23,7 @@ func NewItemRepository(db *sqlx.DB) *ItemRepository {
 // Creates a new item.
 func (r *ItemRepository) CreateItem(
 	item *model.Item,
-) (*model.Item, *exception.ApiError) {
+) (*model.ItemWithUser, *exception.ApiError) {
 	newItem := new(model.Item)
 	query := `
 		INSERT INTO items (wish_list_id, url, name, price)
@@ -41,7 +41,7 @@ func (r *ItemRepository) CreateItem(
 		)
 	}
 
-	return newItem, nil
+	return r.GetItemById(newItem.WishListId, newItem.Id)
 }
 
 // Gets an item by its id.
@@ -106,7 +106,7 @@ func (r *ItemRepository) ListItems(
 // Updates an item.
 func (r *ItemRepository) UpdateItem(
 	item *model.Item,
-) (*model.Item, *exception.ApiError) {
+) (*model.ItemWithUser, *exception.ApiError) {
 	updatedItem := new(model.Item)
 	query := `
 		UPDATE items
@@ -138,7 +138,7 @@ func (r *ItemRepository) UpdateItem(
 		)
 	}
 
-	return updatedItem, nil
+	return r.GetItemById(updatedItem.WishListId, updatedItem.Id)
 }
 
 // Deletes an item by its id.
