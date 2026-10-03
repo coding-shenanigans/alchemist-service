@@ -203,3 +203,28 @@ func (r *UserRepository) GetUserByUsername(
 
 	return user, nil
 }
+
+func (r *UserRepository) ListUsers(
+	q string, pageSize int, lastId int,
+) ([]*model.User, *exception.ApiError) {
+	users := []*model.User{}
+	usernameFilter := "%" + q + "%"
+	query := `
+		SELECT *
+		FROM users
+		WHERE username ILIKE $1
+			AND id > $2
+		ORDER BY id
+		LIMIT $3
+	`
+
+	err := r.db.Select(&users, query, usernameFilter, lastId, pageSize)
+	if err != nil {
+		// TODO: log error
+		return nil, exception.NewApiError(
+			http.StatusInternalServerError, "failed to fetch the users",
+		)
+	}
+
+	return users, nil
+}
