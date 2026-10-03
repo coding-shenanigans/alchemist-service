@@ -50,6 +50,7 @@ func RegisterEndpoints(
 	protected.POST("/auth/signout", authHandler.signout)
 
 	hybrid.GET("/users/:username/profile", userHandler.getUserProfile)
+	public.GET("/users", userHandler.listUsers)
 
 	protected.POST("/users/:username/wish-lists", wishListHandler.createWishList)
 	hybrid.GET("/users/:username/wish-lists", wishListHandler.listWishLists)
