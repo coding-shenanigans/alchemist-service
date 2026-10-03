@@ -36,8 +36,11 @@ func (s *UserService) ListUsers(
 		return nil, false, apiErr
 	}
 
-	hasNextPage := len(users) > pageSize
-	limit := min(len(users), pageSize)
+	hasNextPage := false
+	if len(users) > pageSize {
+		hasNextPage = true
+		users = users[:pageSize]
+	}
 
-	return users[:limit], hasNextPage, nil
+	return users, hasNextPage, nil
 }
