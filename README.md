@@ -94,3 +94,17 @@ docker run --name local-pgadmin4 -e PGADMIN_DEFAULT_EMAIL=your_fake_email -e PGA
 ```bash
 go test ./...
 ```
+
+## Create Docker Images
+
+Build a Docker image
+
+```bash
+docker build -t us-central1-docker.pkg.dev/alchemist-511405/alchemist-images/alchemist-service:v1.0.0 .
+```
+
+Push a Docker image
+
+```bash
+docker push us-central1-docker.pkg.dev/alchemist-511405/alchemist-images/alchemist-service:v1.0.0
+```
