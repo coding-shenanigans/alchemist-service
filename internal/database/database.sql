@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS items (
   CONSTRAINT items_wish_lists_id_fkey
     FOREIGN KEY(wish_list_id) 
     REFERENCES wish_lists(id) 
-    ON DELETE CASCADE
+    ON DELETE CASCADE,
   
   -- Add a foreign key reference to the `users.id` column.
   CONSTRAINT items_reserved_by_user_id_fkey
