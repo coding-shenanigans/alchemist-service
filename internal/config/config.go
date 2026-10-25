@@ -4,12 +4,15 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/cors"
 )
 
 const (
+	portKey = "PORT"
+
 	dbHostKey     = "DB_HOST"
 	dbPortKey     = "DB_PORT"
 	dbUserKey     = "DB_USER"
@@ -27,10 +30,14 @@ const (
 	sessionCookieDomainKey      = "SESSION_COOKIE_DOMAIN"
 	sessionCookieSecureKey      = "SESSION_COOKIE_SECURE"
 	sessionCookieHttpOnlyKey    = "SESSION_COOKIE_HTTP_ONLY"
+
+	allowedOriginsKey = "ALLOWED_ORIGINS"
 )
 
 // TODO: Change this to a struct instead of global variables.
 var (
+	Port string
+
 	DbHost     string
 	DbPort     int
 	DbUser     string
@@ -48,10 +55,14 @@ var (
 	SessionCookieDomain      string
 	SessionCookieSecure      bool
 	SessionCookieHttpOnly    bool
+
+	allowedOrigins []string
 )
 
 // Reads all environment variables.
 func Load() {
+	Port = GetEnvStrOrDefault(portKey, "9000")
+
 	DbHost = GetEnvStr(dbHostKey)
 	DbPort = GetEnvInt(dbPortKey)
 	DbUser = GetEnvStr(dbUserKey)
@@ -66,9 +77,16 @@ func Load() {
 	SessionCookieName = GetEnvStr(sessionCookieNameKey)
 	SessionCookieMaxAgeSecs = GetEnvInt(sessionCookieMaxAgeSecsKey)
 	SessionCookiePath = GetEnvStr(sessionCookiePathKey)
-	SessionCookieDomain = GetEnvStr(sessionCookieDomainKey)
+	// Allow the cookie domain to be empty for host-only cookies
+	SessionCookieDomain = GetEnvStrOrDefault(sessionCookieDomainKey, "")
 	SessionCookieSecure = GetEnvBool(sessionCookieSecureKey)
 	SessionCookieHttpOnly = GetEnvBool(sessionCookieHttpOnlyKey)
+
+	for origin := range strings.SplitSeq(GetEnvStr(allowedOriginsKey), ",") {
+		if origin = strings.TrimSpace(origin); origin != "" {
+			allowedOrigins = append(allowedOrigins, origin)
+		}
+	}
 }
 
 // Gets a required environment variable.
@@ -77,6 +95,17 @@ func GetEnvStr(key string) string {
 
 	if value == "" {
 		log.Fatalf("invalid config value %q for key %q", value, key)
+	}
+
+	return value
+}
+
+// Gets an optional environment variable or falls back to a default value.
+func GetEnvStrOrDefault(key string, defaultValue string) string {
+	value := os.Getenv(key)
+
+	if value == "" {
+		value = defaultValue
 	}
 
 	return value
@@ -109,8 +138,7 @@ func GetEnvBool(key string) bool {
 // Creates a custom CORS config.
 func GetCorsConfig() cors.Config {
 	return cors.Config{
-		// TODO: Fetch origins from env or constants file.
-		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowOrigins:     allowedOrigins,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
 		AllowHeaders:     []string{"Content-Type", "Authorization"},
 		AllowCredentials: true,
