@@ -25,5 +25,5 @@ func main() {
 		hybridRouterGroup,
 	)
 
-	router.Run(":9000")
+	router.Run(":" + config.Port)
 }

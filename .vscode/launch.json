@@ -8,6 +8,8 @@
       "mode": "auto",
       "program": "${workspaceFolder}/cmd/server/main.go",
       "env": {
+        "PORT": "9000",
+        "GIN_MODE": "debug", // mode for the Gin web framework
         "DB_HOST": "localhost",
         "DB_PORT": "5432",
         "DB_USER": "postgres",
@@ -18,12 +20,13 @@
         "ACCESS_TOKEN_DURATION_SECS": "900",
         "REFRESH_TOKEN_SECRET": "refresh_secret",
         "REFRESH_TOKEN_DURATION_SECS": "9000",
-        "SESSION_COOKIE_NAME": "user_session",
+        "SESSION_COOKIE_NAME": "user_session_local",
         "SESSION_COOKIE_MAX_AGE_SECS": "9000",
         "SESSION_COOKIE_PATH": "/",
-        "SESSION_COOKIE_DOMAIN": "localhost",
+        "SESSION_COOKIE_DOMAIN": "", // empty for host-only cookie
         "SESSION_COOKIE_SECURE": "false",
-        "SESSION_COOKIE_HTTP_ONLY": "true"
+        "SESSION_COOKIE_HTTP_ONLY": "true",
+        "ALLOWED_ORIGINS": "http://localhost:3000"
       }
     }
   ]
