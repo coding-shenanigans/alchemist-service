@@ -35,7 +35,7 @@ func (s *UserService) GetUserProfile(
 func (s *UserService) ListUsers(
 	q string, pageSize int, lastId int,
 ) ([]*model.User, bool, *exception.ApiError) {
-	if len(q) <= queryMinLength {
+	if len(q) < queryMinLength {
 		return nil, false, exception.NewApiError(
 			http.StatusBadRequest,
 			fmt.Sprintf(
