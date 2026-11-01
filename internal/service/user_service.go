@@ -1,10 +1,15 @@
 package service
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/coding-shenanigans/alchemist-service/internal/exception"
 	"github.com/coding-shenanigans/alchemist-service/internal/model"
 	"github.com/coding-shenanigans/alchemist-service/internal/repository"
 )
+
+const queryMinLength = 3
 
 type UserService struct {
 	userRepository *repository.UserRepository
@@ -30,6 +35,15 @@ func (s *UserService) GetUserProfile(
 func (s *UserService) ListUsers(
 	q string, pageSize int, lastId int,
 ) ([]*model.User, bool, *exception.ApiError) {
+	if len(q) < queryMinLength {
+		return nil, false, exception.NewApiError(
+			http.StatusBadRequest,
+			fmt.Sprintf(
+				"the search query should have at least %d characters", queryMinLength,
+			),
+		)
+	}
+
 	// `pageSize+1` is used to check if there is a next page.
 	users, apiErr := s.userRepository.ListUsers(q, pageSize+1, lastId)
 	if apiErr != nil {
