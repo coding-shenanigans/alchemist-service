@@ -46,8 +46,8 @@ CREATE TABLE IF NOT EXISTS sessions (
 
   -- Add a foreign key reference to the `users.id` column.
   CONSTRAINT sessions_user_id_fkey
-    FOREIGN KEY(user_id) 
-    REFERENCES users(id) 
+    FOREIGN KEY(user_id)
+    REFERENCES users(id)
     ON DELETE CASCADE
 );
 
@@ -80,8 +80,8 @@ CREATE TABLE IF NOT EXISTS wish_lists (
 
   -- Add a foreign key reference to the `users.id` column.
   CONSTRAINT wish_lists_user_id_fkey
-    FOREIGN KEY(user_id) 
-    REFERENCES users(id) 
+    FOREIGN KEY(user_id)
+    REFERENCES users(id)
     ON DELETE CASCADE
 );
 
@@ -117,13 +117,13 @@ CREATE TABLE IF NOT EXISTS items (
 
   -- Add a foreign key reference to the `wish_lists.id` column.
   CONSTRAINT items_wish_lists_id_fkey
-    FOREIGN KEY(wish_list_id) 
-    REFERENCES wish_lists(id) 
+    FOREIGN KEY(wish_list_id)
+    REFERENCES wish_lists(id)
     ON DELETE CASCADE,
   
   -- Add a foreign key reference to the `users.id` column.
   CONSTRAINT items_reserved_by_user_id_fkey
-    FOREIGN KEY(reserved_by_user_id) 
+    FOREIGN KEY(reserved_by_user_id)
     REFERENCES users(id)
     ON DELETE SET NULL
 );
@@ -134,5 +134,33 @@ CREATE INDEX IF NOT EXISTS idx_items_wish_lists_id ON items(wish_list_id);
 -- Apply the `update_timestamp` trigger to the `items` table.
 CREATE OR REPLACE TRIGGER items_update_timestamp
 BEFORE UPDATE ON items
+FOR EACH ROW
+EXECUTE FUNCTION update_timestamp();
+
+----------------------------------
+-- Set up the `profiles` table. --
+----------------------------------
+
+-- Create the `profiles` table.
+CREATE TABLE IF NOT EXISTS profiles (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  user_id BIGINT NOT NULL UNIQUE,
+  avatar TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  -- Add a foreign key reference to the `users.id` column.
+  CONSTRAINT profiles_user_id_fkey
+    FOREIGN KEY(user_id)
+    REFERENCES users(id)
+    ON DELETE CASCADE
+);
+
+-- Create an index for the `profiles.user_id` column.
+CREATE INDEX IF NOT EXISTS idx_profiles_user_id ON profiles(user_id);
+
+-- Apply the `update_timestamp` trigger to the `profiles` table.
+CREATE OR REPLACE TRIGGER profiles_update_timestamp
+BEFORE UPDATE ON profiles
 FOR EACH ROW
 EXECUTE FUNCTION update_timestamp();
